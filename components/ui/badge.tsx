@@ -1,8 +1,8 @@
 import type { ReactNode } from "react"
 
-type BadgeKind = "active" | "staged" | "suspended" | "deactivated" | "allow" | "review" | "block" | "tag_only" | "neutral"
-type Mode = "active" | "staged" | "suspended" | "deactivated"
-type Action = "allow" | "review" | "block" | "tag_only"
+export type BadgeKind = "active" | "staged" | "suspended" | "deactivated" | "allow" | "review" | "block" | "tag_only" | "neutral"
+export type Mode = "active" | "staged" | "suspended" | "deactivated"
+export type Action = "allow" | "review" | "block" | "tag_only"
 
 const kindStyles: Record<BadgeKind, string> = {
   active: "text-[var(--status-active)] bg-[var(--status-active-bg)] border-[var(--status-active-border)]",
