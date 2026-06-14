@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback, useState, useEffect, useRef, forwardRef } from "react";
+import { useMemo, useState } from "react";
 import type { ReactElement } from "react";
 import { useFields } from "@/lib/hooks/useFields";
 import { useRuleStore } from "@/lib/stores/rule-store";
@@ -9,21 +9,7 @@ import type { FieldDef } from "@/lib/domain/types";
 import { OPERATOR_MAP_BY_TYPE } from "@/lib/domain/types";
 import type { Condition } from "@/lib/stores/rule-store";
 import { treeToJsonLogic as _treeToJsonLogic } from "@/lib/utils/jsonlogic";
-
-// react-querybuilder imports
-import { QueryBuilder } from "react-querybuilder";
-import type {
-  ActionProps,
-  FieldSelectorProps,
-  RuleGroupType,
-  ValueEditorProps,
-  DragHandleProps,
-  CombinatorSelectorProps,
-} from "react-querybuilder";
-import { QueryBuilderDndWithoutProvider } from "@react-querybuilder/dnd";
-import * as ReactDnD from "react-dnd";
-import * as ReactDndHtml5Backend from "react-dnd-html5-backend";
-import { useDragLayer, useDrop, type DragLayerMonitor } from "react-dnd";
+import { useDrop } from "react-dnd";
 import { Icon } from "../ui/icon";
 
 interface ConditionsSectionProps {
@@ -31,73 +17,7 @@ interface ConditionsSectionProps {
   onChange: (tree: Condition) => void;
 }
 
-function defaultOp(field: FieldDef): string {
-  return OPERATOR_MAP_BY_TYPE[field.type]?.[0] ?? "=";
-}
 
-function defaultValue(field: FieldDef): string {
-  if (field.type === "boolean_like") return "true";
-  if (field.type === "enum" && field.allowed_values?.length)
-    return field.allowed_values[0];
-  return "";
-}
-
-// Convert from Condition (Zustand store format) to RuleGroupType (react-querybuilder format)
-function conditionToRuleGroup(cond: Condition): RuleGroupType {
-  if (!cond) {
-    return { combinator: "and", rules: [] };
-  }
-
-  const combinator = (cond.op || "and").toLowerCase();
-  
-  if (cond.type === "group" || cond.children) {
-    return {
-      combinator,
-      rules: (cond.children || []).map((child) => {
-        if (child.type === "group" || child.children) {
-          return conditionToRuleGroup(child);
-        } else {
-          return {
-            field: child.field || "",
-            operator: child.op || "=",
-            value: child.value ?? "",
-          };
-        }
-      }),
-    };
-  }
-
-  return {
-    combinator: "and",
-    rules: [
-      {
-        field: cond.field || "",
-        operator: cond.op || "=",
-        value: cond.value ?? "",
-      },
-    ],
-  };
-}
-
-// Convert from RuleGroupType (react-querybuilder format) to Condition (Zustand store format)
-function ruleGroupToCondition(group: RuleGroupType): Condition {
-  return {
-    type: "group",
-    op: (group.combinator || "AND").toUpperCase() as "AND" | "OR",
-    children: (group.rules || []).map((rule) => {
-      if ("rules" in rule) {
-        return ruleGroupToCondition(rule);
-      } else {
-        return {
-          type: "cond",
-          field: rule.field,
-          op: rule.operator,
-          value: String(rule.value ?? ""),
-        };
-      }
-    }),
-  };
-}
 
 export function ConditionsSection({
   tree,
@@ -197,265 +117,6 @@ function countConditions(node: Condition): { total: number; groups: number } {
   return { total, groups };
 }
 
-// Custom Drag and Drop Action buttons for react-querybuilder
-const SidebarAwareAddRuleAction: React.FC<ActionProps> = (props) => {
-  const isDraggingField = useDragLayer(
-    (monitor: DragLayerMonitor) =>
-      monitor.isDragging() &&
-      monitor.getItemType() === "field" &&
-      Boolean((monitor.getItem() as { field: { path: string } })?.field?.path)
-  );
-
-  const [{ isOver, canDrop }, dropRef] = useDrop(
-    () => ({
-      accept: "field",
-      drop: (item: { field: { path: string } }) => {
-        props.handleOnClick(undefined, {
-          source: "sidebar",
-          fieldName: item.field.path,
-          mode: "rule",
-        });
-      },
-      collect: (monitor) => ({
-        isOver: monitor.isOver(),
-        canDrop: monitor.canDrop(),
-      }),
-    }),
-    [props.handleOnClick]
-  );
-
-  return (
-    <div
-      ref={(node) => {
-        dropRef(node);
-      }}
-      className={
-        isOver && canDrop
-          ? "rounded-md ring-2 ring-(--accent) bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] transition-all"
-          : "transition-all"
-      }
-    >
-      {isDraggingField ? (
-        <div className="border border-dashed border-(--accent) bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-(--accent) rounded-md px-2.5 py-1 text-xs font-semibold cursor-pointer flex items-center gap-1">
-          <Icon name="plus" size={12} />
-          <span>Condition</span>
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={(e) => props.handleOnClick(e)}
-          title={props.title}
-          disabled={props.disabled}
-          className="icon-btn flex items-center justify-center border-none bg-transparent hover:bg-(--bg-hover) rounded cursor-pointer"
-          style={{ width: 26, height: 26 }}
-        >
-          <Icon name="plus" size={12} />
-        </button>
-      )}
-    </div>
-  );
-};
-
-const SidebarAwareAddGroupAction: React.FC<ActionProps> = (props) => {
-  const isDraggingField = useDragLayer(
-    (monitor: DragLayerMonitor) =>
-      monitor.isDragging() &&
-      monitor.getItemType() === "field" &&
-      Boolean((monitor.getItem() as { field: { path: string } })?.field?.path)
-  );
-
-  const [{ isOver, canDrop }, dropRef] = useDrop(
-    () => ({
-      accept: "field",
-      drop: (item: { field: { path: string } }) => {
-        props.handleOnClick(undefined, {
-          source: "sidebar",
-          fieldName: item.field.path,
-          mode: "group",
-        });
-      },
-      collect: (monitor) => ({
-        isOver: monitor.isOver(),
-        canDrop: monitor.canDrop(),
-      }),
-    }),
-    [props.handleOnClick]
-  );
-
-  return (
-    <div
-      ref={(node) => {
-        dropRef(node);
-      }}
-      className={
-        isOver && canDrop
-          ? "rounded-md ring-2 ring-(--accent) bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] transition-all"
-          : "transition-all"
-      }
-    >
-      {isDraggingField ? (
-        <div className="border border-dashed border-(--accent) bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] text-(--accent) rounded-md px-2.5 py-1 text-xs font-semibold cursor-pointer flex items-center gap-1">
-          <span>+ Group</span>
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={(e) => props.handleOnClick(e)}
-          title={props.title}
-          disabled={props.disabled}
-          className="btn sm ghost"
-          style={{ padding: "2px 8px" }}
-        >
-          + group
-        </button>
-      )}
-    </div>
-  );
-};
-
-const DroppableFieldSelector: React.FC<FieldSelectorProps> = (props) => {
-  const [{ isOver, canDrop }, dropRef] = useDrop(
-    () => ({
-      accept: "field",
-      drop: (item: { field: { path: string } }) => {
-        if (item.field?.path) {
-          props.handleOnChange(item.field.path);
-        }
-      },
-      collect: (monitor) => ({
-        isOver: monitor.isOver(),
-        canDrop: monitor.canDrop(),
-      }),
-    }),
-    [props.handleOnChange]
-  );
-
-  return (
-    <div
-      ref={(node) => {
-        dropRef(node);
-      }}
-      className={
-        isOver && canDrop
-          ? "rounded-md ring-2 ring-blue-400 ring-offset-1 focus-within:ring-2"
-          : undefined
-      }
-    >
-      <select
-        data-testid={props.testID}
-        className={props.className}
-        value={String(props.value ?? "")}
-        title={props.title}
-        disabled={props.disabled}
-        onChange={(event) => props.handleOnChange(event.target.value)}
-      >
-        {props.options.map((option: { label: string; options?: Array<{ name: string; value: string; label: string }>; name?: string; value?: string }) => {
-          if (option.options && Array.isArray(option.options)) {
-            return (
-              <optgroup key={option.label} label={option.label}>
-                {option.options.map((subOption) => (
-                  <option
-                    key={subOption.name || subOption.value}
-                    value={subOption.name || subOption.value}
-                  >
-                    {subOption.label || subOption.name || subOption.value}
-                  </option>
-                ))}
-              </optgroup>
-            );
-          }
-
-          return (
-            <option key={option.name || option.value} value={option.name || option.value}>
-              {option.label || option.name || option.value}
-            </option>
-          );
-        })}
-      </select>
-    </div>
-  );
-};
-
-const CustomDragHandle = forwardRef<HTMLElement, DragHandleProps>(
-  ({ title, disabled }, ref) => {
-    return (
-      <div
-        ref={ref as React.Ref<HTMLDivElement>}
-
-        title={title}
-        className={`cursor-grab active:cursor-grabbing text-(--fg-subtle) hover:text-(--fg) p-1 flex items-center justify-center ${
-          disabled ? "opacity-40 cursor-not-allowed" : ""
-        }`}
-      >
-        <Icon name="drag" size={12} stroke={1.5} />
-      </div>
-    );
-  }
-);
-CustomDragHandle.displayName = "CustomDragHandle";
-
-const CustomCombinatorSelector: React.FC<CombinatorSelectorProps> = (props) => {
-  const isOr = props.value === "or" || props.value === "OR";
-
-  const handleToggle = () => {
-    const nextVal = isOr ? "and" : "or";
-    props.handleOnChange(nextVal);
-  };
-
-  return (
-    <button
-      onClick={handleToggle}
-      type="button"
-      style={{
-        padding: "3px 10px",
-        border: "1px solid currentColor",
-        borderRadius: 4,
-        background: isOr
-          ? "color-mix(in srgb, var(--action-tag) 10%, transparent)"
-          : "color-mix(in srgb, var(--fg) 6%, transparent)",
-        color: isOr ? "var(--action-tag)" : "var(--fg)",
-        fontWeight: 600,
-        fontSize: 11,
-        letterSpacing: "0.05em",
-        cursor: "pointer",
-        fontFamily: "var(--font-mono)",
-      }}
-    >
-      {String(props.value || "and").toUpperCase()}
-    </button>
-  );
-};
-
-const CustomRemoveGroupAction: React.FC<ActionProps> = (props) => {
-  return (
-    <button
-      type="button"
-      onClick={(e) => props.handleOnClick(e)}
-      title={props.title}
-      disabled={props.disabled}
-      className="icon-btn text-(--fg-subtle) hover:text-(--accent) transition-colors cursor-pointer border-none bg-transparent flex items-center justify-center"
-      style={{ width: 26, height: 26 }}
-    >
-      <Icon name="x" size={12} />
-    </button>
-  );
-};
-
-const CustomRemoveRuleAction: React.FC<ActionProps> = (props) => {
-  return (
-    <button
-      type="button"
-      onClick={(e) => props.handleOnClick(e)}
-      title={props.title}
-      disabled={props.disabled}
-      className="icon-btn text-(--fg-subtle) hover:text-(--accent) transition-colors cursor-pointer border-none bg-transparent flex items-center justify-center"
-      style={{ width: 26, height: 26 }}
-    >
-      <Icon name="x" size={12} />
-    </button>
-  );
-};
-
 function ConditionsNested({
   tree,
   onChange,
@@ -465,267 +126,365 @@ function ConditionsNested({
 }) {
   const fields = useFieldsStore((s) => s.fields);
 
-  // Group fields for querybuilder option group structure
-  const qbFields = useMemo(() => {
-    const groupsMap = new Map<string, { name: string; label: string; dataType: string; inputType: string; valueEditorType?: string; values?: { name: string; label: string }[] }[]>();
-    fields.forEach((field) => {
-      const parts = field.path.split(".");
-      const groupName = parts.length > 1 ? parts[0] : "Other";
-      const groupLabel = groupName.charAt(0).toUpperCase() + groupName.slice(1);
-
-      const isNumber = field.type === "number";
-      const isEnum = field.type === "enum" || field.type === "boolean_like" || !!field.allowed_values;
-      const values = (field.allowed_values || []).map((v) => ({
-        name: v,
-        label: v,
-      }));
-
-      const mappedField = {
-        name: field.path,
-        label: field.description || field.path,
-        dataType: field.type,
-        inputType: isNumber ? "number" : "text",
-        valueEditorType: isEnum ? "select" : undefined,
-        values: values.length > 0 ? values : undefined,
-      };
-
-      if (!groupsMap.has(groupLabel)) {
-        groupsMap.set(groupLabel, []);
-      }
-      groupsMap.get(groupLabel)!.push(mappedField);
-    });
-
-    return Array.from(groupsMap.entries()).map(([label, options]) => ({
-      label,
-      options,
-    }));
-  }, [fields]);
-
-  // Convert incoming store condition to querybuilder format
-  const query = useMemo(() => conditionToRuleGroup(tree), [tree]);
-
-  // Convert updated querybuilder format back to store condition
-  const handleQueryChange = useCallback((newQuery: RuleGroupType) => {
-    const nextTree = ruleGroupToCondition(newQuery);
-    onChange(nextTree);
-  }, [onChange]);
-
   return (
-    <div className="custom-query-builder h-full">
-      <QueryBuilderDndWithoutProvider dnd={{ ...ReactDnD, ...ReactDndHtml5Backend }}>
-        <QueryBuilder
-          fields={qbFields}
-          query={query}
-          onQueryChange={handleQueryChange}
-          getOperators={(fieldName) => {
-            const field = fields.find((f) => f.path === fieldName);
-            const operators = field
-              ? OPERATOR_MAP_BY_TYPE[field.type] ?? ["=", "≠", ">", "<"]
-              : ["=", "≠", ">", "<"];
-            return operators.map((op) => ({ name: op, value: op, label: op }));
-          }}
-          resetOnFieldChange
-          onAddRule={(rule, _parentPath, _query, context) => {
-            const ctx = context as Record<string, unknown>;
-            if (ctx?.source === "sidebar" && ctx.fieldName) {
-              const field = fields.find((f) => f.path === ctx.fieldName);
-              if (!field) return true;
-              return {
-                ...rule,
-                field: field.path,
-                operator: defaultOp(field),
-                value: defaultValue(field),
-              };
-            }
-            return true;
-          }}
-          onAddGroup={(ruleGroup, _parentPath, _query, context) => {
-            const ctx = context as Record<string, unknown>;
-            if (ctx?.source === "sidebar" && ctx.fieldName) {
-              const field = fields.find((f) => f.path === ctx.fieldName);
-              if (!field) return true;
-              return {
-                ...ruleGroup,
-                rules: [
-                  {
-                    field: field.path,
-                    operator: defaultOp(field),
-                    value: defaultValue(field),
-                  },
-                ],
-              };
-            }
-            return true;
-          }}
-          controlClassnames={{
-            queryBuilder: "queryBuilder-container",
-            ruleGroup:
-              "bg-(--bg-elev) border rounded-lg p-3.5 shadow-sm space-y-2.5 relative",
-            header:
-              "flex flex-wrap md:flex-nowrap items-center gap-3 mb-3",
-            combinators:
-              "bg-(--bg-inset) border border-(--border-strong) rounded-md py-1 px-3 text-xs font-mono font-bold uppercase tracking-wider text-(--fg) hover:bg-(--bg-hover) transition-colors cursor-pointer outline-none",
-            addRule:
-              "bg-transparent text-(--fg) border border-(--border-strong) hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50/20 rounded-md px-3 py-1.5 text-xs font-bold transition-all shadow-sm ml-auto cursor-pointer outline-none",
-            addGroup:
-              "bg-transparent text-(--fg) border border-(--border-strong) hover:border-purple-400 hover:text-purple-600 hover:bg-purple-50/20 rounded-md px-3 py-1.5 text-xs font-bold transition-all shadow-sm ml-2 cursor-pointer outline-none",
-            removeGroup:
-              "text-(--fg-subtle) hover:text-red-600 hover:bg-red-50/20 rounded p-1.5 transition-colors cursor-pointer border-none bg-transparent ml-2 outline-none",
-            body:
-              "border-t border-transparent pt-1 space-y-2",
-            rule:
-              "grid grid-cols-[auto_minmax(180px,1.4fr)_minmax(80px,0.6fr)_minmax(140px,1.4fr)_auto] gap-1.5 items-center p-1.5 bg-(--bg-subtle) border border-(--border-faint) rounded-md shadow-sm hover:shadow-md transition-all relative",
-            fields:
-              "select mono w-full py-1.5 px-2.5",
-            operators:
-              "select mono w-full py-1.5 px-2",
-            value:
-              "input mono w-full py-1.5 px-2.5",
-            removeRule:
-              "text-(--fg-subtle) hover:text-red-500 p-1.5 ml-auto transition-colors cursor-pointer border-none bg-transparent outline-none",
-          }}
-          controlElements={{
-            fieldSelector: DroppableFieldSelector,
-            addRuleAction: SidebarAwareAddRuleAction,
-            addGroupAction: SidebarAwareAddGroupAction,
-            valueEditor: CustomValueEditor,
-            combinatorSelector: CustomCombinatorSelector,
-            dragHandle: CustomDragHandle,
-            removeGroupAction: CustomRemoveGroupAction,
-            removeRuleAction: CustomRemoveRuleAction,
-          }}
-        />
-      </QueryBuilderDndWithoutProvider>
+    <div
+      className="conditions-builder"
+      style={{ padding: 16, borderRadius: 8 }}
+    >
+      <CondGroup
+        node={tree}
+        onChange={onChange}
+        depth={0}
+        fields={fields}
+      />
     </div>
   );
 }
 
-const CustomValueEditor: React.FC<ValueEditorProps> = (props) => {
-  const { value, handleOnChange, inputType, type, values, fieldData } = props;
+function CondGroup({
+  node,
+  onChange,
+  onDelete,
+  depth,
+  fields,
+}: {
+  node: Condition;
+  onChange: (next: Condition) => void;
+  onDelete?: () => void;
+  depth: number;
+  fields: FieldDef[];
+}) {
+  const isOr = node.op === "OR";
+  const borderColor = isOr
+    ? "color-mix(in srgb, var(--action-tag) 35%, var(--border))"
+    : "var(--border-strong)";
 
-  if (fieldData?.dataType === "ip") {
-    return <IPInput value={String(value ?? "")} onChange={handleOnChange} />;
-  }
+  const updateChild = (idx: number, next: Condition | null) => {
+    const children = [...(node.children || [])];
+    if (next === null) children.splice(idx, 1);
+    else children[idx] = next;
+    onChange({ ...node, children });
+  };
 
-  // Select Dropdown (Enum / Boolean)
-  if ((values && values.length > 0) || type === "select") {
-    return (
-      <select
-        value={value ?? ""}
-        onChange={(e) => handleOnChange(e.target.value)}
-        className="select mono w-full"
-      >
-        <option value="" disabled className="text-(--fg-muted)">
-          Select...
-        </option>
-        {values &&
-          values.map((v) => (
-            <option key={String(v.name ?? v.value ?? "")} value={String(v.name ?? v.value ?? "")}>
-              {String(v.label ?? v.name ?? v.value ?? "")}
-            </option>
-          ))}
-      </select>
-    );
-  }
+  const addCond = () =>
+    onChange({
+      ...node,
+      children: [...(node.children || []), { type: "cond" as const, field: "", op: "=", value: "" }],
+    });
 
-  // Normal input
-  const isNumber = inputType === "number" || fieldData?.dataType === "number";
+  const addGroup = () =>
+    onChange({
+      ...node,
+      children: [...(node.children || []), { type: "group" as const, op: "AND" as const, children: [] }],
+    });
+
+  const toggleOp = () => onChange({ ...node, op: isOr ? "AND" : "OR" });
 
   return (
-    <input
-      value={value ?? ""}
-      type={isNumber ? "number" : "text"}
-      onChange={(e) => {
-        if (!isNumber) {
-          handleOnChange(e.target.value);
-          return;
-        }
-        const next = e.target.value.trim();
-        if (!next) {
-          handleOnChange("");
-          return;
-        }
-        const parsed = Number(next);
-        if (!Number.isNaN(parsed)) {
-          handleOnChange(parsed);
-        }
+    <div
+      style={{
+        background: "var(--bg-elev)",
+        border: `1px solid ${borderColor}`,
+        borderRadius: 8,
+        padding: 12,
+        position: "relative",
       }}
-      className="input mono w-full"
-      placeholder={isNumber ? "0" : "Value..."}
-    />
-  );
-};
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          marginBottom: 10,
+        }}
+      >
+        <button
+          onClick={toggleOp}
+          style={{
+            padding: "3px 10px",
+            border: "1px solid currentColor",
+            borderRadius: 4,
+            background: isOr
+              ? "color-mix(in srgb, var(--action-tag) 10%, transparent)"
+              : "color-mix(in srgb, var(--fg) 6%, transparent)",
+            color: isOr ? "var(--action-tag)" : "var(--fg)",
+            fontWeight: 600,
+            fontSize: 11,
+            letterSpacing: "0.05em",
+            cursor: "pointer",
+            fontFamily: "var(--font-mono)",
+          }}
+        >
+          {node.op}
+        </button>
+        <span style={{ fontSize: 11, color: "var(--fg-muted)" }}>
+          {(node.children?.length || 0) === 0
+            ? "Empty group"
+            : `${node.children?.length || 0} ${(node.children?.length || 0) === 1 ? "child" : "children"}`}
+          {depth === 0 && " \u00B7 root"}
+        </span>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
+          <button
+            className="icon-btn"
+            onClick={addCond}
+            title="Add condition"
+            style={{ width: 26, height: 26 }}
+          >
+            <Icon name="plus" size={12} />
+          </button>
+          {depth < 3 && (
+            <button
+              className="btn sm ghost"
+              onClick={addGroup}
+              style={{ padding: "2px 8px" }}
+            >
+              + group
+            </button>
+          )}
+          {depth > 0 && onDelete && (
+            <button
+              className="icon-btn"
+              onClick={onDelete}
+              title="Remove group"
+              style={{ width: 26, height: 26 }}
+            >
+              <Icon name="x" size={12} />
+            </button>
+          )}
+        </div>
+      </div>
 
-function IPInput({
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+          marginLeft: 12,
+          position: "relative",
+        }}
+      >
+        {(node.children?.length || 0) > 1 && (
+          <div
+            style={{
+              position: "absolute",
+              left: -10,
+              top: 8,
+              bottom: 8,
+              width: 1,
+              background: borderColor,
+            }}
+          />
+        )}
+        {!node.children || node.children.length === 0 ? (
+          <div
+            style={{
+              fontSize: 12,
+              padding: "12px 0",
+              textAlign: "center",
+              color: "var(--fg-muted)",
+              border: "1px dashed var(--border-strong)",
+              borderRadius: 6,
+            }}
+          >
+            No conditions yet. Click <Icon name="plus" size={10} /> to add one.
+          </div>
+        ) : (
+          node.children.map((child, i) => (
+            <div key={i} style={{ position: "relative" }}>
+              {(node.children?.length || 0) > 1 && (
+                <div
+                  style={{
+                    position: "absolute",
+                    left: -10,
+                    top: 16,
+                    width: 8,
+                    height: 1,
+                    background: borderColor,
+                  }}
+                />
+              )}
+              {child.type === "group" ? (
+                <CondGroup
+                  node={child}
+                  onChange={(next) => updateChild(i, next)}
+                  onDelete={() => updateChild(i, null)}
+                  depth={depth + 1}
+                  fields={fields}
+                />
+              ) : (
+                <Cond
+                  cond={child}
+                  onChange={(next) => updateChild(i, next)}
+                  onDelete={() => updateChild(i, null)}
+                  fields={fields}
+                />
+              )}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Cond({
+  cond,
+  onChange,
+  onDelete,
+  fields,
+}: {
+  cond: Condition;
+  onChange: (next: Condition) => void;
+  onDelete: () => void;
+  fields: FieldDef[];
+}) {
+  const fieldMeta = fields.find((f) => f.path === cond.field);
+  const ops = fieldMeta
+    ? (OPERATOR_MAP_BY_TYPE[fieldMeta.type] ?? ["=", "\u2260", ">", "<"])
+    : ["=", "\u2260", ">", "<"];
+  const isEnum = fieldMeta?.type === "enum" || fieldMeta?.type === "boolean_like";
+
+  return (
+    <div
+      className="condition-row"
+      style={{
+        display: "grid",
+        gridTemplateColumns: "minmax(180px, 1.4fr) minmax(80px, 0.6fr) minmax(140px, 1.4fr) auto",
+        gap: 6,
+        alignItems: "center",
+        padding: 6,
+        background: "var(--bg-subtle)",
+        border: "1px solid var(--border-faint)",
+        borderRadius: 6,
+        transition: "box-shadow 0.12s, border-color 0.12s",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = "var(--border-strong)";
+        e.currentTarget.style.boxShadow = "var(--shadow-md)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "var(--border-faint)";
+        e.currentTarget.style.boxShadow = "none";
+      }}
+    >
+      <DroppableFieldSelect
+        value={cond.field || ""}
+        onChange={(v) => onChange({ ...cond, field: v, value: "" })}
+        fields={fields}
+      />
+      <select
+        className="select mono"
+        style={{ padding: "5px 8px", width: "100%" }}
+        value={cond.op}
+        onChange={(e) => onChange({ ...cond, op: e.target.value })}
+      >
+        {ops.map((o) => (
+          <option key={o} value={o}>
+            {o}
+          </option>
+        ))}
+      </select>
+      {isEnum ? (
+        <select
+          className="select mono"
+          style={{ padding: "5px 8px", width: "100%" }}
+          value={cond.value || ""}
+          onChange={(e) => onChange({ ...cond, value: e.target.value })}
+        >
+          <option value="">— value —</option>
+          {(fieldMeta?.allowed_values || ["true", "false"]).map((v) => (
+            <option key={v} value={v}>
+              {v}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <input
+          className="input mono"
+          style={{ padding: "5px 8px", width: "100%" }}
+          value={cond.value || ""}
+          onChange={(e) => onChange({ ...cond, value: e.target.value })}
+          placeholder={fieldMeta?.type === "number" ? "number" : "value"}
+        />
+      )}
+      <button
+        className="icon-btn"
+        onClick={onDelete}
+        title="Remove condition"
+        style={{ width: 26, height: 26 }}
+      >
+        <Icon name="x" size={12} />
+      </button>
+    </div>
+  );
+}
+
+function DroppableFieldSelect({
   value,
   onChange,
+  fields,
 }: {
   value: string;
   onChange: (v: string) => void;
+  fields: FieldDef[];
 }) {
-  const parseIP = (v: string) => {
-    const parts = v ? v.split(".") : ["", "", "", ""];
-    return [parts[0] || "", parts[1] || "", parts[2] || "", parts[3] || ""];
-  };
+  const [{ isOver, canDrop }, dropRef] = useDrop(
+    () => ({
+      accept: "field",
+      drop: (item: { field: { path: string } }) => {
+        if (item.field?.path) {
+          onChange(item.field.path);
+        }
+      },
+      collect: (monitor) => ({
+        isOver: monitor.isOver(),
+        canDrop: monitor.canDrop(),
+      }),
+    }),
+    [onChange]
+  );
 
-  const [segments, setSegments] = useState<string[]>(() => parseIP(value));
-  const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
-
-  useEffect(() => {
-    const current = segments.join(".");
-    if (value && value !== current) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSegments(parseIP(value));
-    }
-  }, [value, segments]);
-
-  const updateSegment = (index: number, val: string) => {
-    if (val.length > 3) return;
-    if (val && !/^\d+$/.test(val)) return;
-    if (val && parseInt(val) > 255) val = "255";
-
-    const newSegments = [...segments];
-    newSegments[index] = val;
-    setSegments(newSegments);
-    onChange(newSegments.join("."));
-
-    if (val.length === 3 && index < 3) {
-      inputsRef.current[index + 1]?.focus();
-    }
-  };
-
-  const handleKeyDown = (
-    index: number,
-    e: React.KeyboardEvent<HTMLInputElement>
-  ) => {
-    if (e.key === "." && index < 3) {
-      e.preventDefault();
-      inputsRef.current[index + 1]?.focus();
-    }
-    if (e.key === "Backspace" && !segments[index] && index > 0) {
-      e.preventDefault();
-      inputsRef.current[index - 1]?.focus();
-    }
-  };
+  const groupedFields = useMemo(() => {
+    const map = new Map<string, FieldDef[]>();
+    fields.forEach((f) => {
+      const parts = f.path.split(".");
+      const group = parts.length > 1
+        ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1)
+        : "Other";
+      if (!map.has(group)) map.set(group, []);
+      map.get(group)!.push(f);
+    });
+    return Array.from(map.entries());
+  }, [fields]);
 
   return (
-    <div className="inline-flex items-center border border-(--border-strong) rounded-md bg-(--bg-elev) px-2 shadow-sm transition-all focus-within:border-(--fg-muted) focus-within:ring-3 focus-within:ring-[color-mix(in_srgb,var(--fg-muted)_12%,transparent)]">
-      {segments.map((seg, i) => (
-        <span key={i} className="flex items-center">
-          <input
-            ref={(el) => {
-              if (inputsRef.current) inputsRef.current[i] = el;
-            }}
-            type="text"
-            value={seg}
-            onChange={(e) => updateSegment(i, e.target.value)}
-            onKeyDown={(e) => handleKeyDown(i, e)}
-            className="w-8 text-center border-none outline-none p-0 text-sm font-mono text-(--fg) placeholder-(--fg-muted) bg-transparent"
-            placeholder="0"
-          />
-          {i < 3 && <span className="text-(--fg-muted) select-none pb-0.5 font-mono">.</span>}
-        </span>
-      ))}
+    <div
+      ref={(node) => {
+        dropRef(node);
+      }}
+      style={{
+        borderRadius: 6,
+        outline: isOver && canDrop ? "2px solid var(--accent)" : "none",
+        outlineOffset: 2,
+      }}
+    >
+      <select
+        className="select mono"
+        style={{ padding: "5px 8px", width: "100%" }}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        <option value="">— field —</option>
+        {groupedFields.map(([group, groupFields]) => (
+          <optgroup key={group} label={group}>
+            {groupFields.map((f) => (
+              <option key={f.path} value={f.path}>
+                {f.description || f.path}
+              </option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
     </div>
   );
 }
