@@ -11,7 +11,7 @@ export type EnforcementSeverity =
 /** Raw API response shape */
 export interface FraudRule {
   id: string;
-  identity: {
+  meta: {
     code: string | null;
     name: string;
     description: string | null;
@@ -22,45 +22,39 @@ export interface FraudRule {
   scope: {
     channels: string[] | null;
   };
-  policy: {
-    state: {
-      mode: RuleMode;
-      audit: {
-        created_at_ms: number;
-        updated_at_ms: number;
-        created_by: string | null;
-        updated_by: string | null;
-      };
-    };
-    schedule: {
-      active_from_ms: number | null;
-      active_until_ms: number | null;
-    };
-    rollout: {
-      percent: number;
+  state: {
+    mode: RuleMode;
+    audit: {
+      created_at_ms: number;
+      updated_at_ms: number;
+      created_by: string | null;
+      updated_by: string | null;
     };
   };
-  definition: {
-    evaluation: {
-      condition: boolean | number | string | Record<string, unknown>;
-      logic: Record<string, unknown>;
-    };
+  schedule: {
+    active_from_ms: number | null;
+    active_until_ms: number | null;
   };
-  outcome: {
-    enforcement: {
-      score_impact: number;
-      action: EnforcementAction;
-      severity: EnforcementSeverity;
-      tags: string[];
-      cooldown_ms: number | null;
-      functions: unknown[];
-    };
+  rollout: {
+    percent: number;
+  };
+  evaluation: {
+    condition: boolean | number | string | Record<string, unknown>;
+    logic: Record<string, unknown>;
+  };
+  enforcement: {
+    score_impact: number;
+    action: EnforcementAction;
+    severity: EnforcementSeverity;
+    tags: string[];
+    cooldown_ms: number | null;
+    functions: unknown[];
   };
 }
 
 /** Payload to create/replace a rule */
 export interface RuleInput {
-  identity: {
+  meta: {
     code?: string | null;
     name: string;
     description?: string | null;
@@ -158,6 +152,15 @@ export interface BuilderConfigResponse {
   rule_fields: FieldDef[];
   rule_schema_version: string;
 }
+
+export interface EngineStatusResponseDoc {
+  mode: string;
+  ready: boolean;
+  repository_rules: number;
+  loaded_rules: number;
+  message: string;
+}
+
 
 export type ConditionOperator =
   | "="
