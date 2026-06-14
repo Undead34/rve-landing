@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useCallback } from "react";
 import type { ReactElement } from "react";
 import { useFields } from "@/lib/hooks/useFields";
 import { useRuleStore } from "@/lib/stores/rule-store";
@@ -9,7 +9,7 @@ import type { FieldDef } from "@/lib/domain/types";
 import { OPERATOR_MAP_BY_TYPE } from "@/lib/domain/types";
 import type { Condition } from "@/lib/stores/rule-store";
 import { treeToJsonLogic as _treeToJsonLogic } from "@/lib/utils/jsonlogic";
-import { useDrop } from "react-dnd";
+import { useDrag, useDrop } from "react-dnd";
 import { Icon } from "../ui/icon";
 
 interface ConditionsSectionProps {
@@ -117,6 +117,112 @@ function countConditions(node: Condition): { total: number; groups: number } {
   return { total, groups };
 }
 
+function getParentAndIndex(root: Condition, path: number[]): { parent: Condition; index: number } {
+  let curr = root;
+  for (let i = 0; i < path.length - 1; i++) {
+    if (!curr.children) throw new Error("Invalid path");
+    curr = curr.children[path[i]];
+  }
+  return { parent: curr, index: path[path.length - 1] };
+}
+
+export function moveNode(
+  tree: Condition,
+  fromPath: number[],
+  toPath: number[],
+  position: "before" | "after" | "inside"
+): Condition {
+  const newTree = JSON.parse(JSON.stringify(tree)) as Condition;
+
+  const { parent: fromParent, index: fromIndex } = getParentAndIndex(newTree, fromPath);
+  if (!fromParent.children) return tree;
+  const [nodeToMove] = fromParent.children.splice(fromIndex, 1);
+
+  const adjustedToPath = [...toPath];
+
+  // Avoid dragging parent into its own child
+  let isPrefix = true;
+  if (fromPath.length <= toPath.length) {
+    for (let i = 0; i < fromPath.length; i++) {
+      if (fromPath[i] !== toPath[i]) {
+        isPrefix = false;
+        break;
+      }
+    }
+  } else {
+    isPrefix = false;
+  }
+  if (isPrefix) {
+    return tree;
+  }
+
+  // Adjust target path due to previous removal
+  let affected = true;
+  for (let i = 0; i < fromPath.length - 1; i++) {
+    if (fromPath[i] !== toPath[i]) {
+      affected = false;
+      break;
+    }
+  }
+  if (affected) {
+    const lastIdx = fromPath.length - 1;
+    if (fromPath[lastIdx] < toPath[lastIdx]) {
+      adjustedToPath[lastIdx]--;
+    }
+  }
+
+  if (position === "inside") {
+    let target = newTree;
+    for (const idx of adjustedToPath) {
+      if (!target.children) return tree;
+      target = target.children[idx];
+    }
+    if (target.type !== "group") return tree;
+    if (!target.children) target.children = [];
+    target.children.push(nodeToMove);
+  } else {
+    const { parent: toParent, index: toIndex } = getParentAndIndex(newTree, adjustedToPath);
+    if (!toParent.children) return tree;
+    const insertIndex = position === "before" ? toIndex : toIndex + 1;
+    toParent.children.splice(insertIndex, 0, nodeToMove);
+  }
+
+  return newTree;
+}
+
+export function insertField(
+  tree: Condition,
+  field: { path: string; description: string; type: string },
+  toPath: number[],
+  position: "before" | "after" | "inside"
+): Condition {
+  const newTree = JSON.parse(JSON.stringify(tree)) as Condition;
+  const newCond: Condition = {
+    type: "cond",
+    field: field.path,
+    op: "=",
+    value: "",
+  };
+
+  if (position === "inside") {
+    let target = newTree;
+    for (const idx of toPath) {
+      if (!target.children) return tree;
+      target = target.children[idx];
+    }
+    if (target.type !== "group") return tree;
+    if (!target.children) target.children = [];
+    target.children.push(newCond);
+  } else {
+    const { parent: toParent, index: toIndex } = getParentAndIndex(newTree, toPath);
+    if (!toParent.children) return tree;
+    const insertIndex = position === "before" ? toIndex : toIndex + 1;
+    toParent.children.splice(insertIndex, 0, newCond);
+  }
+
+  return newTree;
+}
+
 function ConditionsNested({
   tree,
   onChange,
@@ -125,6 +231,16 @@ function ConditionsNested({
   onChange: (t: Condition) => void;
 }) {
   const fields = useFieldsStore((s) => s.fields);
+
+  const handleMoveNode = useCallback((fromPath: number[], toPath: number[], pos: "before" | "after" | "inside") => {
+    const nextTree = moveNode(tree, fromPath, toPath, pos);
+    onChange(nextTree);
+  }, [tree, onChange]);
+
+  const handleInsertField = useCallback((field: { path: string; description: string; type: string }, toPath: number[], pos: "before" | "after" | "inside") => {
+    const nextTree = insertField(tree, field, toPath, pos);
+    onChange(nextTree);
+  }, [tree, onChange]);
 
   return (
     <div
@@ -136,6 +252,9 @@ function ConditionsNested({
         onChange={onChange}
         depth={0}
         fields={fields}
+        path={[]}
+        onMoveNode={handleMoveNode}
+        onInsertField={handleInsertField}
       />
     </div>
   );
@@ -147,12 +266,18 @@ function CondGroup({
   onDelete,
   depth,
   fields,
+  path,
+  onMoveNode,
+  onInsertField,
 }: {
   node: Condition;
   onChange: (next: Condition) => void;
   onDelete?: () => void;
   depth: number;
   fields: FieldDef[];
+  path: number[];
+  onMoveNode: (fromPath: number[], toPath: number[], pos: "before" | "after" | "inside") => void;
+  onInsertField: (field: { path: string; description: string; type: string }, toPath: number[], pos: "before" | "after" | "inside") => void;
 }) {
   const isOr = node.op === "OR";
   const borderColor = isOr
@@ -180,14 +305,95 @@ function CondGroup({
 
   const toggleOp = () => onChange({ ...node, op: isOr ? "AND" : "OR" });
 
+  const ref = useRef<HTMLDivElement>(null);
+  const dropPosGroupRef = useRef<"before" | "after">("before");
+
+  // 1. Drag source for this group (if depth > 0)
+  const [{ isDragging }, dragRef] = useDrag({
+    type: "GROUP_ITEM",
+    item: () => ({ path, type: "group" }),
+    canDrag: depth > 0,
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  // 2. Drop target on this group card (for before/after placement, only if depth > 0)
+  const [{ isOverGroup, canDropGroup }, dropRefGroup] = useDrop({
+    accept: ["COND_ITEM", "GROUP_ITEM", "field"],
+    canDrop: () => depth > 0,
+    hover: (item: unknown, monitor) => {
+      if (!ref.current || depth === 0) return;
+      const hoverBoundingRect = ref.current.getBoundingClientRect();
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      const clientOffset = monitor.getClientOffset();
+      if (!clientOffset) return;
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+      dropPosGroupRef.current = hoverClientY < hoverMiddleY ? "before" : "after";
+    },
+    drop: (item: unknown, monitor) => {
+      if (!ref.current || depth === 0) return;
+      if (monitor.didDrop()) return;
+      const pos = dropPosGroupRef.current;
+
+      const f = (item as Record<string, unknown>)?.field;
+      if (f) {
+        onInsertField(f as { path: string; description: string; type: string }, path, pos);
+        return;
+      }
+      const p = (item as Record<string, unknown>)?.path;
+      if (p) {
+        onMoveNode(p as number[], path, pos);
+      }
+    },
+    collect: (monitor) => ({
+      isOverGroup: monitor.isOver({ shallow: true }),
+      canDropGroup: monitor.canDrop(),
+    }),
+  });
+
+  // 3. Drop target on this group's children container (for inside/append placement)
+  const [{ isOverChildren, canDropChildren }, dropRefChildren] = useDrop({
+    accept: ["COND_ITEM", "GROUP_ITEM", "field"],
+    drop: (item: unknown, monitor) => {
+      if (monitor.didDrop()) return;
+
+      const f = (item as Record<string, unknown>)?.field;
+      if (f) {
+        onInsertField(f as { path: string; description: string; type: string }, path, "inside");
+        return;
+      }
+      const p = (item as Record<string, unknown>)?.path;
+      if (p) {
+        onMoveNode(p as number[], path, "inside");
+      }
+    },
+    collect: (monitor) => ({
+      isOverChildren: monitor.isOver({ shallow: true }),
+      canDropChildren: monitor.canDrop(),
+    }),
+  });
+
+  const showHighlight = isOverGroup && canDropGroup;
+
   return (
     <div
+      ref={(node) => {
+        if (depth > 0) {
+          dropRefGroup(node);
+          ref.current = node;
+        }
+      }}
       style={{
         background: "var(--bg-elev)",
         border: `1px solid ${borderColor}`,
         borderRadius: 8,
         padding: 12,
         position: "relative",
+        opacity: isDragging ? 0.3 : 1,
+        outline: showHighlight ? "2px solid var(--accent)" : "none",
+        outlineOffset: showHighlight ? 2 : 0,
+        transition: "opacity 0.12s",
       }}
     >
       <div
@@ -198,6 +404,24 @@ function CondGroup({
           marginBottom: 10,
         }}
       >
+        {depth > 0 && (
+          <button
+            ref={(node) => { dragRef(node); }}
+            className="shrink-0 cursor-grab active:cursor-grabbing bg-transparent border-none text-(--fg-subtle) hover:text-(--fg) p-0"
+            style={{ touchAction: "none" }}
+            title="Drag group"
+          >
+            <svg width="10" height="16" viewBox="0 0 12 20" fill="currentColor">
+              <circle cx="4" cy="3" r="1.5" />
+              <circle cx="8" cy="3" r="1.5" />
+              <circle cx="4" cy="8" r="1.5" />
+              <circle cx="8" cy="8" r="1.5" />
+              <circle cx="4" cy="13" r="1.5" />
+              <circle cx="8" cy="13" r="1.5" />
+            </svg>
+          </button>
+        )}
+
         <button
           onClick={toggleOp}
           style={{
@@ -255,15 +479,24 @@ function CondGroup({
       </div>
 
       <div
+        ref={(node) => {
+          dropRefChildren(node);
+        }}
         style={{
           display: "flex",
           flexDirection: "column",
           gap: 8,
           marginLeft: 12,
           position: "relative",
+          minHeight: (node.children?.length || 0) === 0 ? "auto" : "20px",
+          padding: isOverChildren && canDropChildren ? "6px" : "0px",
+          background: isOverChildren && canDropChildren ? "color-mix(in srgb, var(--accent) 8%, transparent)" : "transparent",
+          borderRadius: 6,
+          border: isOverChildren && canDropChildren ? "1px dashed var(--accent)" : "none",
+          transition: "all 0.15s ease",
         }}
       >
-        {(node.children?.length || 0) > 1 && (
+        {(node.children?.length || 0) > 1 && !isOverChildren && (
           <div
             style={{
               position: "absolute",
@@ -289,38 +522,47 @@ function CondGroup({
             No conditions yet. Click <Icon name="plus" size={10} /> to add one.
           </div>
         ) : (
-          node.children.map((child, i) => (
-            <div key={i} style={{ position: "relative" }}>
-              {(node.children?.length || 0) > 1 && (
-                <div
-                  style={{
-                    position: "absolute",
-                    left: -10,
-                    top: 16,
-                    width: 8,
-                    height: 1,
-                    background: borderColor,
-                  }}
-                />
-              )}
-              {child.type === "group" ? (
-                <CondGroup
-                  node={child}
-                  onChange={(next) => updateChild(i, next)}
-                  onDelete={() => updateChild(i, null)}
-                  depth={depth + 1}
-                  fields={fields}
-                />
-              ) : (
-                <Cond
-                  cond={child}
-                  onChange={(next) => updateChild(i, next)}
-                  onDelete={() => updateChild(i, null)}
-                  fields={fields}
-                />
-              )}
-            </div>
-          ))
+          node.children.map((child, i) => {
+            const childPath = [...path, i];
+            return (
+              <div key={i} style={{ position: "relative" }}>
+                {(node.children?.length || 0) > 1 && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: -10,
+                      top: 16,
+                      width: 8,
+                      height: 1,
+                      background: borderColor,
+                    }}
+                  />
+                )}
+                {child.type === "group" ? (
+                  <CondGroup
+                    node={child}
+                    onChange={(next) => updateChild(i, next)}
+                    onDelete={() => updateChild(i, null)}
+                    depth={depth + 1}
+                    fields={fields}
+                    path={childPath}
+                    onMoveNode={onMoveNode}
+                    onInsertField={onInsertField}
+                  />
+                ) : (
+                  <Cond
+                    cond={child}
+                    onChange={(next) => updateChild(i, next)}
+                    onDelete={() => updateChild(i, null)}
+                    fields={fields}
+                    path={childPath}
+                    onMoveNode={onMoveNode}
+                    onInsertField={onInsertField}
+                  />
+                )}
+              </div>
+            );
+          })
         )}
       </div>
     </div>
@@ -332,11 +574,17 @@ function Cond({
   onChange,
   onDelete,
   fields,
+  path,
+  onMoveNode,
+  onInsertField,
 }: {
   cond: Condition;
   onChange: (next: Condition) => void;
   onDelete: () => void;
   fields: FieldDef[];
+  path: number[];
+  onMoveNode: (fromPath: number[], toPath: number[], pos: "before" | "after" | "inside") => void;
+  onInsertField: (field: { path: string; description: string; type: string }, toPath: number[], pos: "before" | "after" | "inside") => void;
 }) {
   const fieldMeta = fields.find((f) => f.path === cond.field);
   const ops = fieldMeta
@@ -344,29 +592,89 @@ function Cond({
     : ["=", "\u2260", ">", "<"];
   const isEnum = fieldMeta?.type === "enum" || fieldMeta?.type === "boolean_like";
 
+  const ref = useRef<HTMLDivElement>(null);
+  const dropPosRef = useRef<"before" | "after">("before");
+
+  const [{ isDragging }, dragRef] = useDrag({
+    type: "COND_ITEM",
+    item: () => ({ path, type: "cond" }),
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  const [{ isOver, canDrop }, dropRef] = useDrop({
+    accept: ["COND_ITEM", "GROUP_ITEM", "field"],
+    hover: (item: unknown, monitor) => {
+      if (!ref.current) return;
+      const hoverBoundingRect = ref.current.getBoundingClientRect();
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      const clientOffset = monitor.getClientOffset();
+      if (!clientOffset) return;
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+      dropPosRef.current = hoverClientY < hoverMiddleY ? "before" : "after";
+    },
+    drop: (item: unknown, monitor) => {
+      if (!ref.current) return;
+      if (monitor.didDrop()) return;
+      const pos = dropPosRef.current;
+
+      const f = (item as Record<string, unknown>)?.field;
+      if (f) {
+        onInsertField(f as { path: string; description: string; type: string }, path, pos);
+        return;
+      }
+      const p = (item as Record<string, unknown>)?.path;
+      if (p) {
+        onMoveNode(p as number[], path, pos);
+      }
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver({ shallow: true }),
+      canDrop: monitor.canDrop(),
+    }),
+  });
+
+  const showDropHighlight = isOver && canDrop;
+
   return (
     <div
+      ref={(node) => {
+        dropRef(node);
+        ref.current = node;
+      }}
       className="condition-row"
       style={{
         display: "grid",
-        gridTemplateColumns: "minmax(180px, 1.4fr) minmax(80px, 0.6fr) minmax(140px, 1.4fr) auto",
+        gridTemplateColumns: "auto minmax(180px, 1.4fr) minmax(80px, 0.6fr) minmax(140px, 1.4fr) auto",
         gap: 6,
         alignItems: "center",
         padding: 6,
         background: "var(--bg-subtle)",
         border: "1px solid var(--border-faint)",
         borderRadius: 6,
-        transition: "box-shadow 0.12s, border-color 0.12s",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = "var(--border-strong)";
-        e.currentTarget.style.boxShadow = "var(--shadow-md)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = "var(--border-faint)";
-        e.currentTarget.style.boxShadow = "none";
+        transition: "box-shadow 0.12s, border-color 0.12s, opacity 0.12s",
+        opacity: isDragging ? 0.3 : 1,
+        outline: showDropHighlight ? "2px solid var(--accent)" : "none",
+        outlineOffset: showDropHighlight ? 2 : 0,
       }}
     >
+      <button
+        ref={(node) => { dragRef(node); }}
+        className="shrink-0 cursor-grab active:cursor-grabbing bg-transparent border-none text-(--fg-subtle) hover:text-(--fg) p-0"
+        style={{ touchAction: "none" }}
+        title="Drag condition"
+      >
+        <svg width="10" height="16" viewBox="0 0 12 20" fill="currentColor">
+          <circle cx="4" cy="3" r="1.5" />
+          <circle cx="8" cy="3" r="1.5" />
+          <circle cx="4" cy="8" r="1.5" />
+          <circle cx="8" cy="8" r="1.5" />
+          <circle cx="4" cy="13" r="1.5" />
+          <circle cx="8" cy="13" r="1.5" />
+        </svg>
+      </button>
+
       <DroppableFieldSelect
         value={cond.field || ""}
         onChange={(v) => onChange({ ...cond, field: v, value: "" })}
