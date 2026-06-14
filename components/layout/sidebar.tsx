@@ -1,11 +1,12 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 import type { ReactNode } from "react"
 import { Icon } from "../ui/icon"
 import type { NavItem } from "@/lib/navigation"
 
 const PATH_MAP: Record<string, string> = {
+  dashboard: "/dashboard",
   library: "/rules",
   builder: "/rules/builder",
   console: "/console",
@@ -21,13 +22,6 @@ interface SidebarProps {
 }
 
 export function Sidebar({ currentRoute, navItems, adminItems, footer }: SidebarProps) {
-  const router = useRouter()
-
-  const handleNavigate = (id: string) => {
-    if (id === "dashboard") return
-    const path = PATH_MAP[id]
-    if (path) router.push(path)
-  }
   return (
     <nav
       className="flex flex-col overflow-hidden bg-[var(--bg-elev)] border-r border-[var(--border)]"
@@ -49,39 +43,14 @@ export function Sidebar({ currentRoute, navItems, adminItems, footer }: SidebarP
         <div className="text-[var(--fs-xs)] text-[var(--fg-subtle)] uppercase tracking-[0.06em] px-2 pb-1 font-medium">
           Workspace
         </div>
-        {navItems.map((item) => (
-          <div
-            key={item.id}
-            onClick={() => handleNavigate(item.id)}
-            className={[
-              "flex items-center gap-[10px] px-2 py-[6px] rounded-[var(--radius-sm)] cursor-pointer select-none text-[var(--fs-md)]",
-              currentRoute === item.id
-                ? "bg-[var(--bg-active)] text-[var(--fg)] font-medium"
-                : "text-[var(--fg-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--fg)]",
-            ].join(" ")}
-          >
-            <Icon name={item.icon} />
-            <span>{item.label}</span>
-            {item.badge && (
-              <span className="ml-auto text-[10px] text-[var(--fg-subtle)] font-mono">
-                {item.badge}
-              </span>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {adminItems && adminItems.length > 0 && (
-        <div className="border-t border-[var(--border-faint)] px-[6px] py-3 flex flex-col gap-[2px]">
-          <div className="text-[var(--fs-xs)] text-[var(--fg-subtle)] uppercase tracking-[0.06em] px-2 pb-1 font-medium">
-            Admin
-          </div>
-          {adminItems.map((item) => (
-            <div
+        {navItems.map((item) => {
+          const href = PATH_MAP[item.id] || "/dashboard";
+          return (
+            <Link
               key={item.id}
-              onClick={() => handleNavigate(item.id)}
+              href={href}
               className={[
-                "flex items-center gap-[10px] px-2 py-[6px] rounded-[var(--radius-sm)] cursor-pointer select-none text-[var(--fs-md)]",
+                "flex items-center gap-[10px] px-2 py-[6px] rounded-[var(--radius-sm)] cursor-pointer select-none text-[var(--fs-md)] no-underline",
                 currentRoute === item.id
                   ? "bg-[var(--bg-active)] text-[var(--fg)] font-medium"
                   : "text-[var(--fg-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--fg)]",
@@ -89,8 +58,39 @@ export function Sidebar({ currentRoute, navItems, adminItems, footer }: SidebarP
             >
               <Icon name={item.icon} />
               <span>{item.label}</span>
-            </div>
-          ))}
+              {item.badge && (
+                <span className="ml-auto text-[10px] text-[var(--fg-subtle)] font-mono">
+                  {item.badge}
+                </span>
+              )}
+            </Link>
+          );
+        })}
+      </div>
+
+      {adminItems && adminItems.length > 0 && (
+        <div className="border-t border-[var(--border-faint)] px-[6px] py-3 flex flex-col gap-[2px]">
+          <div className="text-[var(--fs-xs)] text-[var(--fg-subtle)] uppercase tracking-[0.06em] px-2 pb-1 font-medium">
+            Admin
+          </div>
+          {adminItems.map((item) => {
+            const href = PATH_MAP[item.id] || "/dashboard";
+            return (
+              <Link
+                key={item.id}
+                href={href}
+                className={[
+                  "flex items-center gap-[10px] px-2 py-[6px] rounded-[var(--radius-sm)] cursor-pointer select-none text-[var(--fs-md)] no-underline",
+                  currentRoute === item.id
+                    ? "bg-[var(--bg-active)] text-[var(--fg)] font-medium"
+                    : "text-[var(--fg-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--fg)]",
+                ].join(" ")}
+              >
+                <Icon name={item.icon} />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
         </div>
       )}
 
