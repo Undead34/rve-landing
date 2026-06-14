@@ -29,7 +29,7 @@ export function useRuleCrud() {
       );
 
       return {
-        identity: {
+        meta: {
           code: draft.identity.code || null,
           name: draft.identity.name,
           description: draft.identity.description || null,
@@ -101,7 +101,7 @@ export function useRuleCrud() {
     } finally {
       setIsSaving(false);
     }
-    }, [buildRuleInput, ruleId, markClean, setIsSaving, setRuleId, setSaveError]);
+  }, [buildRuleInput, ruleId, markClean, setIsSaving, setRuleId, setSaveError]);
 
   const loadRule = useCallback(async (id: string) => {
     setIsSaving(true);
@@ -118,37 +118,37 @@ export function useRuleCrud() {
         ruleId: rule.id,
         draft: {
           identity: {
-            code: rule.identity.code ?? "",
-            name: rule.identity.name,
-            description: rule.identity.description ?? "",
-            version: rule.identity.version,
-            author: rule.identity.author,
-            tags: rule.identity.tags,
+            code: rule.meta.code ?? "",
+            name: rule.meta.name,
+            description: rule.meta.description ?? "",
+            version: rule.meta.version,
+            author: rule.meta.author,
+            tags: rule.meta.tags ?? [],
           },
           channels: rule.scope.channels ?? [],
           conditionTree: jsonLogicToConditionTree(
-            rule.definition.evaluation.logic
+            rule.evaluation.logic
           ),
-          evaluationCondition: rule.definition.evaluation.condition,
+          evaluationCondition: rule.evaluation.condition,
           enforcement: {
-            action: rule.outcome.enforcement.action,
-            score_impact: rule.outcome.enforcement.score_impact,
-            severity: rule.outcome.enforcement.severity,
-            tags: rule.outcome.enforcement.tags,
-            cooldown_seconds: rule.outcome.enforcement.cooldown_ms
-              ? Math.floor(rule.outcome.enforcement.cooldown_ms / 1000)
+            action: rule.enforcement.action,
+            score_impact: rule.enforcement.score_impact,
+            severity: rule.enforcement.severity,
+            tags: rule.enforcement.tags,
+            cooldown_seconds: rule.enforcement.cooldown_ms
+              ? Math.floor(rule.enforcement.cooldown_ms / 1000)
               : 0,
           },
           policy: {
-            mode: rule.policy.state.mode,
-            rollout: rule.policy.rollout.percent,
-            schedule_from: rule.policy.schedule.active_from_ms
-              ? new Date(rule.policy.schedule.active_from_ms)
+            mode: rule.state.mode,
+            rollout: rule.rollout.percent,
+            schedule_from: rule.schedule.active_from_ms
+              ? new Date(rule.schedule.active_from_ms)
                   .toISOString()
                   .slice(0, 16)
               : "",
-            schedule_to: rule.policy.schedule.active_until_ms
-              ? new Date(rule.policy.schedule.active_until_ms)
+            schedule_to: rule.schedule.active_until_ms
+              ? new Date(rule.schedule.active_until_ms)
                   .toISOString()
                   .slice(0, 16)
               : "",
