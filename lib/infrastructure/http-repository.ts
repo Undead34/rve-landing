@@ -1,5 +1,6 @@
 import type {
   BuilderConfigResponse,
+  EngineStatusResponseDoc,
   FraudRule,
   RuleDecisionRequest,
   RuleDecisionResponse,
@@ -146,9 +147,28 @@ export class HttpRuleRepository implements RuleRepository {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async decideTrace(request: RuleDecisionRequest): Promise<any> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this.request<any>("/api/v1/decisions/trace", {
+      method: "POST",
+      body: JSON.stringify(request),
+    });
+  }
+
   async getBuilderConfig(): Promise<BuilderConfigResponse> {
     return this.request<BuilderConfigResponse>(
       "/api/v1/ui/builder-config"
     );
+  }
+
+  async getEngineStatus(): Promise<EngineStatusResponseDoc> {
+    return this.request<EngineStatusResponseDoc>("/api/v1/engine/status");
+  }
+
+  async reloadEngine(): Promise<void> {
+    await this.request<void>("/api/v1/engine/reload", {
+      method: "POST",
+    });
   }
 }

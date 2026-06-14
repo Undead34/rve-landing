@@ -1,5 +1,6 @@
 import type {
   BuilderConfigResponse,
+  EngineStatusResponseDoc,
   FraudRule,
   RuleDecisionRequest,
   RuleDecisionResponse,
@@ -17,5 +18,9 @@ export interface RuleRepository {
   patch(id: string, rulePatch: RulePatchInput): Promise<FraudRule>;
   delete(id: string): Promise<void>;
   decide(request: RuleDecisionRequest): Promise<RuleDecisionResponse>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  decideTrace(request: RuleDecisionRequest): Promise<any>;
   getBuilderConfig(): Promise<BuilderConfigResponse>;
+  getEngineStatus(): Promise<EngineStatusResponseDoc>;
+  reloadEngine(): Promise<void>;
 }
