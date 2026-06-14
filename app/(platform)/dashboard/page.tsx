@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Sidebar } from "@/components/layout/sidebar";
 import { SidebarFooter } from "@/components/layout/sidebar-footer";
@@ -13,9 +16,10 @@ import {
   OpenLibraryButton,
   TimeRangeSegmented,
 } from "@/components/dashboard/dashboard-actions";
+import { HttpRuleRepository } from "@/lib/infrastructure/http-repository";
 import {
-  engine,
-  ruleCounts,
+  engine as mockEngine,
+  ruleCounts as mockRuleCounts,
   dailyVolume,
   recentActivity,
   contract,
@@ -23,13 +27,74 @@ import {
 import { NAV_ITEMS, ADMIN_ITEMS } from "@/lib/navigation";
 
 const CHANNELS = ["web", "mobile", "api", "branch", "atm", "callcenter"];
+const repository = new HttpRuleRepository();
 
 export default function DashboardPage() {
+  const [engineState, setEngineState] = useState(mockEngine);
+  const [ruleCountsState, setRuleCountsState] = useState(mockRuleCounts);
+  const [isReloading, setIsReloading] = useState(false);
+  const [engineReady, setEngineReady] = useState(true);
+
+  const fetchData = async () => {
+    try {
+      const status = await repository.getEngineStatus();
+      setEngineReady(status.ready);
+      setEngineState({
+        status: status.ready ? "ready" : "not_ready",
+        rules_loaded: status.loaded_rules,
+        rules_in_repo: status.repository_rules,
+        last_reload_at: engineState.last_reload_at,
+        last_reload_by: "scheduler",
+        uptime_days: 41,
+        decisions_per_min: 1240,
+        p99_latency_ms: 22,
+      });
+
+      // Fetch rules to count modes
+      const rulesRes = await repository.getAll(1, 100);
+      const counts = { active: 0, staged: 0, suspended: 0, deactivated: 0 };
+      rulesRes.data.forEach((r) => {
+        const mode = r.state?.mode;
+        if (mode && mode in counts) {
+          counts[mode as keyof typeof counts]++;
+        }
+      });
+      setRuleCountsState(counts);
+    } catch (err) {
+      console.error("Failed to load dashboard data from backend", err);
+    }
+  };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchData();
+    const interval = setInterval(fetchData, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleReload = async () => {
+    setIsReloading(true);
+    try {
+      await repository.reloadEngine();
+      // Update the last reload timestamp to now
+      setEngineState(prev => ({
+        ...prev,
+        last_reload_at: new Date().toISOString(),
+        last_reload_by: "dashboard",
+      }));
+      await fetchData();
+    } catch (err) {
+      console.error("Failed to reload engine", err);
+    } finally {
+      setIsReloading(false);
+    }
+  };
+
   const total =
-    ruleCounts.active +
-    ruleCounts.staged +
-    ruleCounts.suspended +
-    ruleCounts.deactivated;
+    ruleCountsState.active +
+    ruleCountsState.staged +
+    ruleCountsState.suspended +
+    ruleCountsState.deactivated;
   const totalEvents = dailyVolume.reduce(
     (s, d) => s + d.allow + d.review + d.block + d.tag_only,
     0,
@@ -50,7 +115,7 @@ export default function DashboardPage() {
       topbar={
         <Topbar
           breadcrumbs={[{ label: "Red Velvet" }, { label: "Overview" }]}
-          engineStatus={{ ready: true, rulesCount: engine.rules_loaded }}
+          engineStatus={{ ready: engineReady, rulesCount: engineState.rules_loaded }}
         />
       }
     >
@@ -64,10 +129,10 @@ export default function DashboardPage() {
             channels.
           </p>
         </div>
-        <DashboardHeaderActions />
+        <DashboardHeaderActions onReload={handleReload} isReloading={isReloading} />
       </div>
 
-      <EngineStatus engine={engine} contract={contract} />
+      <EngineStatus engine={engineState} contract={contract} />
 
       <div
         className="split grid gap-6"
@@ -82,7 +147,7 @@ export default function DashboardPage() {
               <OpenLibraryButton />
             </CardHeader>
             <CardBody>
-              <ModeBreakdown counts={ruleCounts} />
+              <ModeBreakdown counts={ruleCountsState} />
             </CardBody>
           </Card>
 

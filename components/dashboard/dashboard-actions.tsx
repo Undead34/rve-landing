@@ -5,12 +5,19 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Segmented } from "@/components/ui/tabs"
 
-export function DashboardHeaderActions() {
+interface DashboardHeaderActionsProps {
+  onReload?: () => void
+  isReloading?: boolean
+}
+
+export function DashboardHeaderActions({ onReload, isReloading }: DashboardHeaderActionsProps) {
   const router = useRouter()
 
   return (
     <div className="flex items-center gap-2">
-      <Button icon="refresh">Reload engine</Button>
+      <Button icon="refresh" onClick={onReload} disabled={isReloading}>
+        {isReloading ? "Reloading..." : "Reload engine"}
+      </Button>
       <Button
         kind="accent"
         icon="plus"
