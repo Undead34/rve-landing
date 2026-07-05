@@ -2,15 +2,15 @@
 
 import { Icon } from "../ui/icon";
 import { useRuleStore } from "@/lib/stores/rule-store";
+import { SECTION_META } from "./panels/sections";
 
-const SECTIONS = [
-  { id: "metadata", label: "Metadata", icon: "info" },
-  { id: "scope", label: "Scope", icon: "branch" },
-  { id: "policy", label: "Policy", icon: "shield" },
-  { id: "conditions", label: "Conditions", icon: "rule", primary: true },
-  { id: "consequence", label: "Consequence", icon: "zap" },
-  { id: "summary", label: "Summary", icon: "list" },
-];
+// Single source of truth: the rail mirrors the registry's section order.
+const SECTIONS = SECTION_META.map((s) => ({
+  id: s.id,
+  label: s.title,
+  icon: s.icon,
+  primary: s.primary,
+}));
 
 export function SectionsRailPanel() {
   const activeSection = useRuleStore((s) => s.activeSection);
@@ -32,10 +32,8 @@ export function SectionsRailPanel() {
               key={s.id}
               onClick={() => {
                 setActiveSection(s.id);
-                const tabId =
-                  s.id === "conditions" ? "conditions-nested" : s.id;
                 window.dispatchEvent(
-                  new CustomEvent("rve-select-tab", { detail: { tabId } }),
+                  new CustomEvent("rve-select-tab", { detail: { tabId: s.id } }),
                 );
               }}
               className="flex items-center gap-2.5 px-2 py-1.5 text-[13px] rounded cursor-pointer select-none"
@@ -52,7 +50,7 @@ export function SectionsRailPanel() {
                 if (!isActive) e.currentTarget.style.background = "transparent";
               }}
             >
-              <Icon name={s.icon as never} size={14} />
+              <Icon name={s.icon} size={14} />
               <span>{s.label}</span>
               {s.primary && (
                 <span className="ml-auto text-[10px] text-(--fg-subtle)">

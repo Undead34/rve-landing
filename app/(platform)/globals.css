@@ -282,6 +282,35 @@ body {
   font-weight: 500;
 }
 
+.rve-empty-tabstrip {
+  display: none !important;
+}
+
+.rve-context-hidden-tab {
+  flex: 0 0 0 !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+.rve-context-hidden-tab > * {
+  display: none !important;
+}
+
+.flexlayout__tabset_tab_divider + .rve-context-hidden-tab,
+.rve-context-hidden-tab + .flexlayout__tabset_tab_divider,
+.flexlayout__border_tab_divider + .rve-context-hidden-tab,
+.rve-context-hidden-tab + .flexlayout__border_tab_divider {
+  display: none !important;
+  width: 0 !important;
+}
+
 .flexlayout__tab_button_content {
   display: flex;
   align-items: center;

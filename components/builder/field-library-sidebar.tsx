@@ -3,8 +3,21 @@
 import { useState, useMemo } from "react";
 import { useDrag } from "react-dnd";
 import { useFieldsStore } from "@/lib/stores/fields-store";
+import { useRuleStore } from "@/lib/stores/rule-store";
+import { Icon } from "../ui/icon";
 
-export function FieldLibrarySidebar() {
+interface FieldLibrarySidebarProps {
+  /**
+   * Whether fields can actually be dropped where you are. Dragging only makes
+   * sense in the Conditions editor, so elsewhere the panel shows a hint with a
+   * jump-to-Conditions action instead of a list you can't use.
+   */
+  isRelevant?: boolean;
+}
+
+export function FieldLibrarySidebar({
+  isRelevant = true,
+}: FieldLibrarySidebarProps) {
   const groups = useFieldsStore((s) => s.groups);
   const isLoading = useFieldsStore((s) => s.isLoading);
   const error = useFieldsStore((s) => s.error);
@@ -25,6 +38,11 @@ export function FieldLibrarySidebar() {
       }))
       .filter((g) => g.fields.length > 0);
   }, [groups, search]);
+
+  // Hooks above always run; the contextual hint is a pure render branch.
+  if (!isRelevant) {
+    return <FieldLibraryHint />;
+  }
 
   return (
     <aside className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden bg-(--bg-elev) p-3">
@@ -86,6 +104,38 @@ export function FieldLibrarySidebar() {
           </div>
         )}
       </div>
+    </aside>
+  );
+}
+
+function FieldLibraryHint() {
+  const setActiveSection = useRuleStore((s) => s.setActiveSection);
+
+  return (
+    <aside className="flex h-full min-h-0 flex-col items-center justify-center gap-3 bg-(--bg-elev) p-6 text-center">
+      <div className="grid h-9 w-9 place-items-center rounded-full border border-(--border-strong) bg-(--bg-inset) text-(--fg-subtle)">
+        <Icon name="rule" size={16} />
+      </div>
+      <div className="text-[13px] font-medium text-(--fg)">Field Library</div>
+      <p className="m-0 max-w-[220px] text-[11px] leading-relaxed text-(--fg-muted)">
+        Fields are dragged into the{" "}
+        <span className="font-medium text-(--fg)">Conditions</span> builder. Open
+        it to browse and drop fields.
+      </p>
+      <button
+        type="button"
+        onClick={() => {
+          setActiveSection("conditions");
+          window.dispatchEvent(
+            new CustomEvent("rve-select-tab", {
+              detail: { tabId: "conditions" },
+            }),
+          );
+        }}
+        className="rounded-md border border-(--border-strong) bg-(--bg-elev) px-3 py-1.5 text-[12px] font-medium text-(--fg) hover:bg-(--bg-hover) cursor-pointer"
+      >
+        Go to Conditions
+      </button>
     </aside>
   );
 }
