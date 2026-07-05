@@ -2,10 +2,10 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { NavLinks } from "../molecules/nav-links"
-import { ThemeToggle } from "../molecules/theme-toggle"
-import { trackEvent } from "../../_lib/analytics"
-import { DEMO_URL } from "../../_lib/links"
+import { NavLinks } from "@/components/landing/molecules/nav-links"
+import { ThemeToggle } from "@/components/landing/molecules/theme-toggle"
+import { trackEvent } from "@/lib/landing/analytics"
+import { DEMO_URL } from "@/lib/landing/links"
 
 const DEMO_LINK_PROPS = DEMO_URL.startsWith("http")
   ? ({ target: "_blank", rel: "noreferrer noopener" } as const)

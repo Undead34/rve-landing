@@ -1,5 +1,5 @@
-import { HeroActions } from "../molecules/hero-actions"
-import { TerminalOutput } from "../molecules/terminal-output"
+import { HeroActions } from "@/components/landing/molecules/hero-actions"
+import { TerminalOutput } from "@/components/landing/molecules/terminal-output"
 
 export function HeroSection() {
   return (

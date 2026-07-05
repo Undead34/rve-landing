@@ -1,7 +1,7 @@
 "use client"
 
-import { ThemeMoonIcon } from "../atoms/icons/theme-moon-icon"
-import { ThemeSunIcon } from "../atoms/icons/theme-sun-icon"
+import { ThemeMoonIcon } from "@/components/landing/atoms/icons/theme-moon-icon"
+import { ThemeSunIcon } from "@/components/landing/atoms/icons/theme-sun-icon"
 
 function toggleTheme() {
   const root = document.documentElement

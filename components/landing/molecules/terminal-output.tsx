@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { TerminalWindowControls } from "../atoms/terminal-window-controls"
+import { TerminalWindowControls } from "@/components/landing/atoms/terminal-window-controls"
 
 const COMMAND = "cargo run --release --bin rve"
 

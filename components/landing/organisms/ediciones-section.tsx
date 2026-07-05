@@ -1,4 +1,4 @@
-import { EditionCard } from "../molecules/edition-card"
+import { EditionCard } from "@/components/landing/molecules/edition-card"
 
 export function EdicionesSection() {
   return (

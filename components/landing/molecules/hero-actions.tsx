@@ -1,7 +1,7 @@
 "use client"
 
-import { trackEvent } from "../../_lib/analytics"
-import { DEMO_URL } from "../../_lib/links"
+import { trackEvent } from "@/lib/landing/analytics"
+import { DEMO_URL } from "@/lib/landing/links"
 
 const DEMO_LINK_PROPS = DEMO_URL.startsWith("http")
   ? ({ target: "_blank", rel: "noreferrer noopener" } as const)
