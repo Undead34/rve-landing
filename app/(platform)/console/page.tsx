@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -14,6 +14,18 @@ import { HttpRuleRepository } from "@/lib/infrastructure/http-repository";
 import { NAV_ITEMS, ADMIN_ITEMS } from "@/lib/navigation";
 
 const repository = new HttpRuleRepository();
+const CONSOLE_SIDEBAR = (
+  <Sidebar
+    currentRoute="console"
+    navItems={NAV_ITEMS}
+    adminItems={ADMIN_ITEMS}
+    footer={<SidebarFooter />}
+  />
+);
+const CONSOLE_BREADCRUMBS = [
+  { label: "Red Velvet" },
+  { label: "Decision console" },
+];
 
 // Standard RVE OpenAPI-compliant Decision Request payload
 const DEFAULT_PAYLOAD = {
@@ -96,6 +108,9 @@ const DEFAULT_PAYLOAD = {
     flags: {},
   },
 };
+type ConsolePayload = typeof DEFAULT_PAYLOAD & {
+  signals: typeof DEFAULT_PAYLOAD.signals & { velocity_1h?: number };
+};
 
 interface DecisionResult {
   event_id: string;
@@ -133,7 +148,9 @@ interface RecentSim {
 export default function DecisionConsolePage() {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState("json");
-  const [jsonContent, setJsonContent] = useState(JSON.stringify(DEFAULT_PAYLOAD, null, 2));
+  const [jsonContent, setJsonContent] = useState(() =>
+    JSON.stringify(DEFAULT_PAYLOAD, null, 2)
+  );
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [evaluating, setEvaluating] = useState(false);
   const [decisionResult, setDecisionResult] = useState<DecisionResult | null>(null);
@@ -243,7 +260,7 @@ export default function DecisionConsolePage() {
   };
 
   const loadSimIntoConsole = (simType: string) => {
-    const payloadCopy = JSON.parse(JSON.stringify(DEFAULT_PAYLOAD));
+    const payloadCopy = structuredClone(DEFAULT_PAYLOAD) as ConsolePayload;
     if (simType === "card_velocity") {
       payloadCopy.signals.velocity_1h = 6;
       payloadCopy.payload.money.minor_units = 24850;
@@ -258,23 +275,18 @@ export default function DecisionConsolePage() {
     setJsonError(null);
   };
 
+  const consoleTopbar = useMemo(
+    () => (
+      <Topbar
+        breadcrumbs={CONSOLE_BREADCRUMBS}
+        engineStatus={{ ready: engineReady, rulesCount: rulesLoadedCount }}
+      />
+    ),
+    [engineReady, rulesLoadedCount],
+  );
+
   return (
-    <AppShell noPad
-      sidebar={
-        <Sidebar
-          currentRoute="console"
-          navItems={NAV_ITEMS}
-          adminItems={ADMIN_ITEMS}
-          footer={<SidebarFooter />}
-        />
-      }
-      topbar={
-        <Topbar
-          breadcrumbs={[{ label: "Red Velvet" }, { label: "Decision console" }]}
-          engineStatus={{ ready: engineReady, rulesCount: rulesLoadedCount }}
-        />
-      }
-    >
+    <AppShell noPad sidebar={CONSOLE_SIDEBAR} topbar={consoleTopbar}>
       <div className="flex-1 overflow-hidden grid" style={{ gridTemplateColumns: "1fr 380px" }}>
         {/* Left column: Event editor */}
         <div className="flex flex-col overflow-hidden">
@@ -307,6 +319,7 @@ export default function DecisionConsolePage() {
               </div>
               <div className="flex flex-col gap-[2px] mb-4">
                 <button
+                  type="button"
                   onClick={() => setActiveSection("json")}
                   className={`flex items-center gap-[10px] w-full px-2 py-[6px] rounded-[var(--radius-sm)] cursor-pointer select-none text-[var(--fs-md)] border-none text-left bg-transparent ${
                     activeSection === "json"
@@ -324,13 +337,13 @@ export default function DecisionConsolePage() {
                 Simulation History
               </div>
               <div className="flex flex-col gap-2">
-                {recentSimulations.map((s, idx) => (
+                {recentSimulations.map((s) => (
                   <div
-                    key={idx}
+                    key={s.id}
                     className="p-2 border border-[var(--border-faint)] rounded bg-[var(--bg-inset)] hover:bg-[var(--bg-hover)] cursor-pointer transition-colors"
                     onClick={() => {
                       // Parse standard outcomes
-                      const mockSim = JSON.parse(JSON.stringify(DEFAULT_PAYLOAD));
+                      const mockSim = structuredClone(DEFAULT_PAYLOAD) as ConsolePayload;
                       if (s.outcome === "block") {
                         mockSim.signals.velocity_1h = 7;
                         mockSim.payload.money.minor_units = 250000;

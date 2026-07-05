@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { CommandPalette } from "./command-palette";
 
 interface AppShellProps {
   sidebar: ReactNode;
@@ -22,6 +23,7 @@ export function AppShell({ sidebar, topbar, children, noPad }: AppShellProps) {
           {children}
         </main>
       </div>
+      <CommandPalette />
     </div>
   );
 }

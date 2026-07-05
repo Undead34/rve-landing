@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Red Velvet Engine - Platform UI 🍒
 
-## Getting Started
+The next-generation admin and operations console for the **Red Velvet Engine** (RVE) decision engine.
 
-First, run the development server:
+## 🚀 Key Features
 
+* **Live Dashboard**: Real-time health metrics, active rules count, and backend hot-reloads.
+* **Rule Builder**: Premium drag-and-drop conditions builder, logic tree explorer, JSON Logic editor, and guard pre-filters.
+* **Rule Library**: Flat table and grid explorer with filtering, full search, and bulk operations.
+* **Decision Console**: Interactive playground to simulate events, evaluate fraud scores, and trace rule hits.
+* **Settings**: Real-time schema contracts and engine configurations.
+* **Global Command Palette (`⌘K`)**: Seamless search-as-you-type rule queries, platform navigation, theme toggling, and builder-scoped actions.
+
+## 🛠️ Tech Stack
+
+* **Core**: Next.js 16 (App Router, Turbopack) & React 19
+* **State Management**: Zustand
+* **Styling**: Tailwind CSS v4 & PostCSS
+* **Layout Grid**: FlexLayout-React
+* **Interactions**: React DnD (Dnd Provider) & CMDK (Command Palette)
+
+## 📦 Getting Started
+
+### 1. Install dependencies
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Run the development server
+```bash
+pnpm dev
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Open [http://localhost:3000](http://localhost:3000) to access the console.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📖 Documentation
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+* [Command Palette Guide](docs/command-palette.md) - Learn more about keyboard shortcuts, action triggers, and context features.

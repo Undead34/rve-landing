@@ -9,6 +9,7 @@ const SECTIONS = [
   { id: "policy", label: "Policy", icon: "shield" },
   { id: "conditions", label: "Conditions", icon: "rule", primary: true },
   { id: "consequence", label: "Consequence", icon: "zap" },
+  { id: "summary", label: "Summary", icon: "list" },
 ];
 
 export function SectionsRailPanel() {
@@ -26,7 +27,13 @@ export function SectionsRailPanel() {
           return (
             <div
               key={s.id}
-              onClick={() => setActiveSection(s.id)}
+              onClick={() => {
+                setActiveSection(s.id);
+                const tabId = s.id === "conditions" ? "conditions-nested" : s.id;
+                window.dispatchEvent(
+                  new CustomEvent("rve-select-tab", { detail: { tabId } })
+                );
+              }}
               className="flex items-center gap-2.5 px-2 py-1.5 text-[13px] rounded cursor-pointer select-none"
               style={{
                 color: isActive ? "var(--fg)" : "var(--fg-muted)",

@@ -139,6 +139,7 @@ function TagInput({
         >
           {t}
           <button
+            type="button"
             className="icon-btn"
             style={{
               width: 14,

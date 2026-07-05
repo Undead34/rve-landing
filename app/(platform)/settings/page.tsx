@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Sidebar } from "@/components/layout/sidebar";
 import { SidebarFooter } from "@/components/layout/sidebar-footer";
@@ -13,6 +13,18 @@ import { HttpRuleRepository } from "@/lib/infrastructure/http-repository";
 import { NAV_ITEMS, ADMIN_ITEMS } from "@/lib/navigation";
 
 const repository = new HttpRuleRepository();
+const SETTINGS_SIDEBAR = (
+  <Sidebar
+    currentRoute="settings"
+    navItems={NAV_ITEMS}
+    adminItems={ADMIN_ITEMS}
+    footer={<SidebarFooter />}
+  />
+);
+const SETTINGS_BREADCRUMBS = [
+  { label: "Red Velvet" },
+  { label: "Settings" },
+];
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("runtime");
@@ -72,24 +84,18 @@ export default function SettingsPage() {
 
     fetchBackendConfig();
   }, []);
+  const settingsTopbar = useMemo(
+    () => (
+      <Topbar
+        breadcrumbs={SETTINGS_BREADCRUMBS}
+        engineStatus={{ ready: engineReady, rulesCount: rulesLoadedCount }}
+      />
+    ),
+    [engineReady, rulesLoadedCount],
+  );
 
   return (
-    <AppShell
-      sidebar={
-        <Sidebar
-          currentRoute="settings"
-          navItems={NAV_ITEMS}
-          adminItems={ADMIN_ITEMS}
-          footer={<SidebarFooter />}
-        />
-      }
-      topbar={
-        <Topbar
-          breadcrumbs={[{ label: "Red Velvet" }, { label: "Settings" }]}
-          engineStatus={{ ready: engineReady, rulesCount: rulesLoadedCount }}
-        />
-      }
-    >
+    <AppShell sidebar={SETTINGS_SIDEBAR} topbar={settingsTopbar}>
       <div className="page-header mb-6">
         <h1 className="text-(--fs-xl) font-semibold tracking-[-0.02em] m-0">Settings</h1>
         <p className="text-(--fg-muted) mt-1 m-0">
@@ -105,6 +111,7 @@ export default function SettingsPage() {
           { id: "team", label: "Team & access" },
         ].map((tab) => (
           <button
+            type="button"
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`pb-3 text-[14px] font-medium border-b-2 transition-all cursor-pointer relative ${
@@ -374,7 +381,7 @@ export default function SettingsPage() {
                       </td>
                       <td className="p-3 text-[var(--fg-subtle)]">{m.active}</td>
                       <td className="p-3 text-right">
-                        <button className="icon-btn">⋯</button>
+                        <button type="button" className="icon-btn">⋯</button>
                       </td>
                     </tr>
                   ))}
@@ -398,6 +405,7 @@ function ToggleSetting({ label, hint, defaultChecked = false }: { label: string;
         {hint && <div className="text-[11px] text-[var(--fg-subtle)] mt-0.5">{hint}</div>}
       </div>
       <button
+        type="button"
         onClick={() => setChecked(!checked)}
         className={`w-[34px] h-[20px] rounded-full relative cursor-pointer border-none transition-colors shrink-0 ${
           checked ? "bg-[var(--accent)]" : "bg-[var(--bg-inset)] border border-[var(--border)]"

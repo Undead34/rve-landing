@@ -17,6 +17,18 @@ import { NAV_ITEMS, ADMIN_ITEMS } from "@/lib/navigation";
 
 const repository = new HttpRuleRepository();
 const DEFAULT_CHANNELS = ["web", "mobile", "api", "branch", "atm", "callcenter"];
+const RULE_LIBRARY_SIDEBAR = (
+  <Sidebar
+    currentRoute="library"
+    navItems={NAV_ITEMS}
+    adminItems={ADMIN_ITEMS}
+    footer={<SidebarFooter />}
+  />
+);
+const RULE_LIBRARY_BREADCRUMBS = [
+  { label: "Red Velvet" },
+  { label: "Rule library" },
+];
 
 export default function RuleLibraryPage() {
   const router = useRouter();
@@ -164,24 +176,18 @@ export default function RuleLibraryPage() {
   };
 
   const allSelected = filteredRules.length > 0 && filteredRules.every((r) => selected.has(r.id));
+  const ruleLibraryTopbar = useMemo(
+    () => (
+      <Topbar
+        breadcrumbs={RULE_LIBRARY_BREADCRUMBS}
+        engineStatus={{ ready: engineReady, rulesCount: rulesLoadedCount }}
+      />
+    ),
+    [engineReady, rulesLoadedCount],
+  );
 
   return (
-    <AppShell
-      sidebar={
-        <Sidebar
-          currentRoute="library"
-          navItems={NAV_ITEMS}
-          adminItems={ADMIN_ITEMS}
-          footer={<SidebarFooter />}
-        />
-      }
-      topbar={
-        <Topbar
-          breadcrumbs={[{ label: "Red Velvet" }, { label: "Rule library" }]}
-          engineStatus={{ ready: engineReady, rulesCount: rulesLoadedCount }}
-        />
-      }
-    >
+    <AppShell sidebar={RULE_LIBRARY_SIDEBAR} topbar={ruleLibraryTopbar}>
       <div className="page-header flex items-center justify-between mb-6">
         <div>
           <h1 className="text-(--fs-xl) font-semibold tracking-[-0.02em] m-0">

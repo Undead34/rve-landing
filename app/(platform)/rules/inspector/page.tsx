@@ -14,6 +14,67 @@ import { type FraudRule } from "@/lib/domain/types";
 import { NAV_ITEMS, ADMIN_ITEMS } from "@/lib/navigation";
 
 const repository = new HttpRuleRepository();
+const INSPECTOR_SIDEBAR = (
+  <Sidebar
+    currentRoute="inspector"
+    navItems={NAV_ITEMS}
+    adminItems={ADMIN_ITEMS}
+    footer={<SidebarFooter />}
+  />
+);
+const INSPECTOR_TOPBAR = (
+  <Topbar
+    breadcrumbs={[
+      { label: "Red Velvet" },
+      { label: "Rule Inspector" },
+    ]}
+  />
+);
+
+function renderLogicOperator(operator: string) {
+  const label =
+    operator === "==" || operator === "==="
+      ? "="
+      : operator === "!=" || operator === "!=="
+        ? "≠"
+        : operator;
+
+  return <span className="text-amber-500 font-semibold px-1">{label}</span>;
+}
+
+function renderLogicOperand(value: unknown) {
+  if (typeof value === "object" && value !== null && "var" in value) {
+    return (
+      <span className="text-emerald-400 font-mono font-medium">
+        {String((value as Record<string, unknown>).var)}
+      </span>
+    );
+  }
+
+  if (typeof value === "string") {
+    return <span className="text-rose-400 font-mono">{`"${value}"`}</span>;
+  }
+
+  return <span className="text-sky-400 font-mono">{String(value)}</span>;
+}
+
+function getStableListEntries<T>(
+  items: T[],
+  getSignature: (item: T) => string,
+): Array<{ item: T; key: string }> {
+  const seen = new Map<string, number>();
+
+  return items.map((item) => {
+    const signature = getSignature(item);
+    const occurrence = seen.get(signature) ?? 0;
+    seen.set(signature, occurrence + 1);
+
+    return {
+      item,
+      key: `${signature}:${occurrence}`,
+    };
+  });
+}
 
 function RuleInspectorContent() {
   const router = useRouter();
@@ -98,13 +159,23 @@ function RuleInspectorContent() {
       })
       .slice(0, 4);
   }, [rule, allRules]);
+  const inspectorDetailTopbar = useMemo(
+    () => (
+      <Topbar
+        breadcrumbs={[
+          { label: "Red Velvet" },
+          { label: "Rule library" },
+          { label: "Rule inspector" },
+        ]}
+        engineStatus={{ ready: engineReady, rulesCount: rulesLoadedCount }}
+      />
+    ),
+    [engineReady, rulesLoadedCount],
+  );
 
   if (!ruleId) {
     return (
-      <AppShell
-        sidebar={<Sidebar currentRoute="inspector" navItems={NAV_ITEMS} adminItems={ADMIN_ITEMS} footer={<SidebarFooter />} />}
-        topbar={<Topbar breadcrumbs={[{ label: "Red Velvet" }, { label: "Rule Inspector" }]} />}
-      >
+      <AppShell sidebar={INSPECTOR_SIDEBAR} topbar={INSPECTOR_TOPBAR}>
         <div className="p-8 text-center text-[var(--fg-muted)]">No rule selected to inspect. Please open library first.</div>
       </AppShell>
     );
@@ -112,10 +183,7 @@ function RuleInspectorContent() {
 
   if (loading && !rule) {
     return (
-      <AppShell
-        sidebar={<Sidebar currentRoute="inspector" navItems={NAV_ITEMS} adminItems={ADMIN_ITEMS} footer={<SidebarFooter />} />}
-        topbar={<Topbar breadcrumbs={[{ label: "Red Velvet" }, { label: "Rule Inspector" }]} />}
-      >
+      <AppShell sidebar={INSPECTOR_SIDEBAR} topbar={INSPECTOR_TOPBAR}>
         <div className="p-8 text-center text-[var(--fg-muted)]">Loading rule details...</div>
       </AppShell>
     );
@@ -123,10 +191,7 @@ function RuleInspectorContent() {
 
   if (!rule) {
     return (
-      <AppShell
-        sidebar={<Sidebar currentRoute="inspector" navItems={NAV_ITEMS} adminItems={ADMIN_ITEMS} footer={<SidebarFooter />} />}
-        topbar={<Topbar breadcrumbs={[{ label: "Red Velvet" }, { label: "Rule Inspector" }]} />}
-      >
+      <AppShell sidebar={INSPECTOR_SIDEBAR} topbar={INSPECTOR_TOPBAR}>
         <div className="p-8 text-center text-[var(--fg-muted)]">Rule not found.</div>
       </AppShell>
     );
@@ -135,12 +200,14 @@ function RuleInspectorContent() {
   // Audit trail logic based on rule audit info
   const auditTrail = [
     {
+      id: `updated-${rule.state.audit.updated_at_ms}`,
       ts: new Date(rule.state.audit.updated_at_ms).toLocaleString(),
       by: rule.state.audit.updated_by || rule.meta.author,
       what: "Updated",
       detail: `Rule state mode is ${rule.state.mode}`,
     },
     {
+      id: `created-${rule.state.audit.created_at_ms}`,
       ts: new Date(rule.state.audit.created_at_ms).toLocaleString(),
       by: rule.state.audit.created_by || rule.meta.author,
       what: "Created",
@@ -149,22 +216,7 @@ function RuleInspectorContent() {
   ];
 
   return (
-    <AppShell
-      sidebar={
-        <Sidebar
-          currentRoute="inspector"
-          navItems={NAV_ITEMS}
-          adminItems={ADMIN_ITEMS}
-          footer={<SidebarFooter />}
-        />
-      }
-      topbar={
-        <Topbar
-          breadcrumbs={[{ label: "Red Velvet" }, { label: "Rule library" }, { label: "Rule inspector" }]}
-          engineStatus={{ ready: engineReady, rulesCount: rulesLoadedCount }}
-        />
-      }
-    >
+    <AppShell sidebar={INSPECTOR_SIDEBAR} topbar={inspectorDetailTopbar}>
       <div className="mb-4">
         <Button kind="ghost" size="sm" icon="arrow-left" onClick={() => router.push("/rules")}>
           Back to library
@@ -225,6 +277,7 @@ function RuleInspectorContent() {
           { id: "related", label: "Related rules", count: relatedRules.length },
         ].map((tab) => (
           <button
+            type="button"
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`pb-3 text-[14px] font-medium border-b-2 transition-all cursor-pointer relative ${
@@ -397,8 +450,8 @@ function RuleInspectorContent() {
           <div className="bg-[var(--bg-elev)] border border-[var(--border)] rounded-[var(--radius-lg)] p-6">
             <div className="relative pl-6">
               <div className="absolute left-[7px] top-1 bottom-1 w-[1px] bg-[var(--border)]" />
-              {auditTrail.map((item, idx) => (
-                <div key={idx} className="relative pb-6 last:pb-0">
+              {auditTrail.map((item) => (
+                <div key={item.id} className="relative pb-6 last:pb-0">
                   <div className="absolute left-[-24px] top-1.5 w-3.5 h-3.5 rounded-full bg-[var(--bg-elev)] border-2 border-[var(--fg)]" />
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-medium text-[13px]">{item.what}</span>
@@ -448,10 +501,7 @@ function RuleInspectorContent() {
 export default function RuleInspectorPage() {
   return (
     <Suspense fallback={
-      <AppShell
-        sidebar={<Sidebar currentRoute="inspector" navItems={NAV_ITEMS} adminItems={ADMIN_ITEMS} footer={<SidebarFooter />} />}
-        topbar={<Topbar breadcrumbs={[{ label: "Red Velvet" }, { label: "Rule Inspector" }]} />}
-      >
+      <AppShell sidebar={INSPECTOR_SIDEBAR} topbar={INSPECTOR_TOPBAR}>
         <div className="p-8 text-center text-[var(--fg-muted)]">Loading inspector...</div>
       </AppShell>
     }>
@@ -474,6 +524,11 @@ function LogicVisualizer({ logic }: { logic: any }) {
 
   if (op === "and" || op === "or") {
     const isAnd = op === "and";
+    const logicArgs = getStableListEntries(
+      args as unknown[],
+      (arg) => JSON.stringify(arg) ?? String(arg),
+    );
+
     return (
       <div className="flex flex-col gap-2 pl-4 border-l border-[var(--border-strong)] my-1">
         <div className="flex items-center gap-2">
@@ -485,9 +540,9 @@ function LogicVisualizer({ logic }: { logic: any }) {
           <span className="text-[var(--fg-subtle)] text-[11px] font-mono">({(args as unknown[]).length} conditions)</span>
         </div>
         <div className="flex flex-col gap-3">
-          {(args as unknown[]).map((arg, idx) => (
-            <div key={idx}>
-              <LogicVisualizer logic={arg} />
+          {logicArgs.map(({ item, key }) => (
+            <div key={key}>
+              <LogicVisualizer logic={item} />
             </div>
           ))}
         </div>
@@ -495,31 +550,15 @@ function LogicVisualizer({ logic }: { logic: any }) {
     );
   }
 
-  // Operators
-  const renderOperator = (operator: string) => {
-    const label = operator === "==" || operator === "===" ? "=" : operator === "!=" || operator === "!==" ? "≠" : operator;
-    return <span className="text-amber-500 font-semibold px-1">{label}</span>;
-  };
-
   if (Array.isArray(args) && args.length >= 2) {
     const left = args[0];
     const right = args[1];
 
-    const renderOperand = (val: unknown) => {
-      if (typeof val === "object" && val !== null && "var" in val) {
-        return <span className="text-emerald-400 font-mono font-medium">{String((val as Record<string, unknown>).var)}</span>;
-      }
-      if (typeof val === "string") {
-        return <span className="text-rose-400 font-mono">{'"' + val + '"'}</span>;
-      }
-      return <span className="text-sky-400 font-mono">{String(val)}</span>;
-    };
-
     return (
       <div className="flex items-center flex-wrap gap-1 bg-[var(--bg-elev)] px-3 py-1.5 rounded border border-[var(--border-faint)] w-fit">
-        {renderOperand(left)}
-        {renderOperator(op)}
-        {renderOperand(right)}
+        {renderLogicOperand(left)}
+        {renderLogicOperator(op)}
+        {renderLogicOperand(right)}
       </div>
     );
   }

@@ -125,11 +125,11 @@ export function ResultPanel({ decision, trace, onNavigate }: ResultPanelProps) {
           Rules hit
         </h3>
         <div className="flex flex-col gap-[6px]">
-          {decision.rules_hit.map((r, i) => {
+          {decision.rules_hit.map((r) => {
             const isMiss = r.score_delta === 0 && r.reason
             return (
               <div
-                key={i}
+                key={`${r.rule_id}:${r.version}`}
                 onClick={() => onNavigate?.(r.rule_id)}
                 className="p-[8px_10px] border border-[var(--border)] rounded-[6px] cursor-pointer bg-[var(--bg-elev)]"
                 style={{ opacity: isMiss ? 0.6 : 1 }}
@@ -173,8 +173,12 @@ export function ResultPanel({ decision, trace, onNavigate }: ResultPanelProps) {
         </div>
         {traceOpen && (
           <div className="flex-1 overflow-y-auto py-2 bg-[var(--bg-inset)]">
-            {trace.map((t, i) => (
-              <TraceRow key={i} step={t} last={i === trace.length - 1} />
+            {trace.map((t, index) => (
+              <TraceRow
+                key={t.step}
+                step={t}
+                last={index === trace.length - 1}
+              />
             ))}
           </div>
         )}

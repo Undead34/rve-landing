@@ -11,12 +11,12 @@ const DEMO_LINK_PROPS = DEMO_URL.startsWith("http")
   ? ({ target: "_blank", rel: "noreferrer noopener" } as const)
   : {}
 
+function trackDemoClick(location: "navbar" | "mobile_menu") {
+  trackEvent("cta_click", { location, cta: "solicitar_demo" })
+}
+
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-
-  const handleDemoClick = (location: "navbar" | "mobile_menu") => {
-    trackEvent("cta_click", { location, cta: "solicitar_demo" })
-  }
 
   return (
     <nav className="bg-[#0A0A0A]/90 backdrop-blur-md border-b border-burgundy/30 w-full z-50 fixed top-0">
@@ -42,7 +42,7 @@ export function Navbar() {
             href={DEMO_URL}
             {...DEMO_LINK_PROPS}
             className="hidden md:inline-flex font-mono text-sm px-5 py-2.5 border border-burgundy hover:border-cherry hover:bg-cherry/10 text-cream transition-all duration-300"
-            onClick={() => handleDemoClick("navbar")}
+            onClick={() => trackDemoClick("navbar")}
           >
             SOLICITAR DEMO
           </a>
@@ -81,7 +81,7 @@ export function Navbar() {
             {...DEMO_LINK_PROPS}
             className="mt-5 inline-flex w-full items-center justify-center font-mono text-sm px-5 py-2.5 border border-burgundy hover:border-cherry hover:bg-cherry/10 text-cream transition-all duration-300"
             onClick={() => {
-              handleDemoClick("mobile_menu")
+              trackDemoClick("mobile_menu")
               setIsMenuOpen(false)
             }}
           >

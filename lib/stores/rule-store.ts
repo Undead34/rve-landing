@@ -7,11 +7,30 @@ import type {
 } from "../domain/types";
 
 export interface Condition {
+  id?: string;
   type: "cond" | "group";
   field?: string;
   op?: string;
   value?: string;
   children?: Condition[];
+}
+
+let conditionIdSequence = 0;
+
+export function createConditionId(): string {
+  const uuid = globalThis.crypto?.randomUUID?.();
+  if (uuid) return uuid;
+
+  conditionIdSequence += 1;
+  return `condition-${Date.now().toString(36)}-${conditionIdSequence.toString(36)}`;
+}
+
+export function ensureConditionIds(condition: Condition): Condition {
+  return {
+    ...condition,
+    id: condition.id ?? createConditionId(),
+    children: condition.children?.map(ensureConditionIds),
+  };
 }
 
 export interface RuleDraft {
@@ -68,41 +87,43 @@ interface RuleStore {
   resetDraft: () => void;
 }
 
-const defaultDraft: RuleDraft = {
-  identity: {
-    code: "",
-    name: "",
-    description: "",
-    version: "1.0.0",
-    author: "FraudOps",
-    tags: [],
-  },
-  channels: ["web", "mobile"],
-  conditionTree: {
-    type: "group",
-    op: "AND",
-    children: [{ type: "cond", field: "", op: "=", value: "" }],
-  },
-  evaluationCondition: true,
-  enforcement: {
-    action: "review",
-    score_impact: 5,
-    severity: "moderate",
-    tags: [],
-    cooldown_seconds: 300,
-  },
-  policy: {
-    mode: "staged",
-    rollout: 100,
-    schedule_from: "",
-    schedule_to: "",
-  },
-};
+function createDefaultDraft(): RuleDraft {
+  return {
+    identity: {
+      code: "",
+      name: "",
+      description: "",
+      version: "1.0.0",
+      author: "FraudOps",
+      tags: [],
+    },
+    channels: ["web", "mobile"],
+    conditionTree: ensureConditionIds({
+      type: "group",
+      op: "AND",
+      children: [{ type: "cond", field: "", op: "=", value: "" }],
+    }),
+    evaluationCondition: true,
+    enforcement: {
+      action: "review",
+      score_impact: 5,
+      severity: "moderate",
+      tags: [],
+      cooldown_seconds: 300,
+    },
+    policy: {
+      mode: "staged",
+      rollout: 100,
+      schedule_from: "",
+      schedule_to: "",
+    },
+  };
+}
 
 export const useRuleStore = create<RuleStore>()(
   persist(
     (set) => ({
-      draft: { ...defaultDraft, identity: { ...defaultDraft.identity }, enforcement: { ...defaultDraft.enforcement }, policy: { ...defaultDraft.policy } },
+      draft: createDefaultDraft(),
       activeSection: "conditions",
       activeTab: "builder",
       codeView: "condition",
@@ -113,7 +134,13 @@ export const useRuleStore = create<RuleStore>()(
 
       setDraft: (partial) =>
         set((state) => ({
-          draft: { ...state.draft, ...partial },
+          draft: {
+            ...state.draft,
+            ...partial,
+            conditionTree: partial.conditionTree
+              ? ensureConditionIds(partial.conditionTree)
+              : state.draft.conditionTree,
+          },
           isDirty: true,
         })),
 
@@ -121,7 +148,10 @@ export const useRuleStore = create<RuleStore>()(
 
       setConditionTree: (tree) =>
         set((state) => ({
-          draft: { ...state.draft, conditionTree: tree },
+          draft: {
+            ...state.draft,
+            conditionTree: ensureConditionIds(tree),
+          },
           isDirty: true,
         })),
 
@@ -174,12 +204,7 @@ export const useRuleStore = create<RuleStore>()(
 
       resetDraft: () =>
         set({
-          draft: {
-            ...defaultDraft,
-            identity: { ...defaultDraft.identity },
-            enforcement: { ...defaultDraft.enforcement },
-            policy: { ...defaultDraft.policy },
-          },
+          draft: createDefaultDraft(),
           isDirty: false,
           ruleId: null,
           saveError: null,
@@ -187,6 +212,21 @@ export const useRuleStore = create<RuleStore>()(
     }),
     {
       name: "rve-platform:rule-store",
+      merge: (persistedState, currentState) => {
+        const typedState = persistedState as Partial<RuleStore> | undefined;
+        const persistedDraft = typedState?.draft
+          ? {
+              ...typedState.draft,
+              conditionTree: ensureConditionIds(typedState.draft.conditionTree),
+            }
+          : currentState.draft;
+
+        return {
+          ...currentState,
+          ...typedState,
+          draft: persistedDraft,
+        };
+      },
       partialize: (state) => ({
         draft: state.draft,
         activeSection: state.activeSection,

@@ -93,9 +93,9 @@ export function ValidationPanel({
             </div>
           </div>
         )}
-        {validation.map((v, i) => (
+        {validation.map((v) => (
           <div
-            key={i}
+            key={`${v.level}:${v.section}:${v.msg}`}
             onClick={() => onJump(v.section)}
             style={{
               padding: "10px 12px",

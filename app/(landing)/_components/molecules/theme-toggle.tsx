@@ -3,15 +3,15 @@
 import { ThemeMoonIcon } from "../atoms/icons/theme-moon-icon"
 import { ThemeSunIcon } from "../atoms/icons/theme-sun-icon"
 
+function toggleTheme() {
+  const root = document.documentElement
+  const shouldUseDark = !root.classList.contains("dark")
+
+  root.classList.toggle("dark", shouldUseDark)
+  window.localStorage.setItem("theme", shouldUseDark ? "dark" : "light")
+}
+
 export function ThemeToggle() {
-  const toggleTheme = () => {
-    const root = document.documentElement
-    const shouldUseDark = !root.classList.contains("dark")
-
-    root.classList.toggle("dark", shouldUseDark)
-    window.localStorage.setItem("theme", shouldUseDark ? "dark" : "light")
-  }
-
   return (
     <button
       id="theme-toggle"

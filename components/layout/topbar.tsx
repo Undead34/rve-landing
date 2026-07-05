@@ -1,6 +1,7 @@
 "use client"
 
 import { IconButton } from "../ui/button"
+import { useCommandPaletteStore } from "@/lib/stores/command-palette-store"
 
 interface TopbarProps {
   breadcrumbs: { label: string; href?: string }[]
@@ -11,6 +12,7 @@ interface TopbarProps {
 }
 
 export function Topbar({ breadcrumbs, engineStatus }: TopbarProps) {
+  const toggleCommandPalette = useCommandPaletteStore((s) => s.toggle)
   return (
     <div
       className="flex items-center px-6 gap-4 shrink-0 bg-[var(--bg-elev)] border-b border-[var(--border)]"
@@ -18,7 +20,10 @@ export function Topbar({ breadcrumbs, engineStatus }: TopbarProps) {
     >
       <div className="flex items-center gap-[6px] text-[var(--fs-md)] text-[var(--fg-muted)]">
         {breadcrumbs.map((crumb, i) => (
-          <span key={i} className="flex items-center gap-[6px]">
+          <span
+            key={`${crumb.href ?? "current"}-${crumb.label}`}
+            className="flex items-center gap-[6px]"
+          >
             {i > 0 && (
               <span className="text-[var(--fg-subtle)]">/</span>
             )}
@@ -38,8 +43,8 @@ export function Topbar({ breadcrumbs, engineStatus }: TopbarProps) {
       <div className="flex-1" />
 
       <div className="flex items-center gap-2">
-        <IconButton icon="search" title="Search" />
-        <IconButton icon="command" title="Command palette" />
+        <IconButton icon="search" title="Search" onClick={toggleCommandPalette} />
+        <IconButton icon="command" title="Command palette" onClick={toggleCommandPalette} />
         {engineStatus && (
           <div className="flex items-center gap-[6px] px-[10px] py-[4px] border border-[var(--border)] rounded-[999px] text-[var(--fs-sm)] text-[var(--fg-muted)] bg-[var(--bg-elev)]">
             <span

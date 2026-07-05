@@ -51,6 +51,7 @@ export function Segmented({ value, onChange, options }: SegmentedProps) {
     <div className="inline-flex bg-[var(--bg-subtle)] rounded-[var(--radius-md)] p-[2px] gap-[2px]">
       {options.map((opt) => (
         <button
+          type="button"
           key={opt.value}
           onClick={() => onChange(opt.value)}
           className={[

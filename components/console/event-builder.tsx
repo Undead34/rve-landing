@@ -184,8 +184,8 @@ function EventSectionForm({ section }: { section: string }) {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        {s.fields.map((f: FormField, i: number) => (
-          <div key={i} className="flex flex-col gap-1">
+        {s.fields.map((f: FormField) => (
+          <div key={f.label} className="flex flex-col gap-1">
             <label className="font-mono text-[11px] text-[var(--fg)]">{f.label}</label>
             {f.type === "select" ? (
               <select

@@ -124,7 +124,7 @@ export function RuleTable({
                   className="py-[10px] px-3 border-b border-[var(--border-faint)]"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <button className="icon-btn" title="More">
+                  <button type="button" className="icon-btn" title="More">
                     <span className="icon-btn-inner">⋯</span>
                   </button>
                 </td>

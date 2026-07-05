@@ -5,6 +5,7 @@ import { useRuleStore } from "../stores/rule-store";
 import { HttpRuleRepository } from "../infrastructure/http-repository";
 import type { FraudRule, RuleInput } from "../domain/types";
 import { treeToJsonLogic } from "@/lib/utils/jsonlogic";
+import { createConditionId, ensureConditionIds } from "@/lib/stores/rule-store";
 
 const repository = new HttpRuleRepository();
 
@@ -126,8 +127,8 @@ export function useRuleCrud() {
             tags: rule.meta.tags ?? [],
           },
           channels: rule.scope.channels ?? [],
-          conditionTree: jsonLogicToConditionTree(
-            rule.evaluation.logic
+          conditionTree: ensureConditionIds(
+            jsonLogicToConditionTree(rule.evaluation.logic)
           ),
           evaluationCondition: rule.evaluation.condition,
           enforcement: {
@@ -174,6 +175,7 @@ function jsonLogicToConditionTree(
   logic: Record<string, unknown>
 ): import("../stores/rule-store").Condition {
   const root: import("../stores/rule-store").Condition = {
+    id: createConditionId(),
     type: "group",
     op: "AND",
     children: [],
@@ -203,6 +205,7 @@ function jsonLogicToConditionTree(
           return sub;
         }
         return {
+          id: createConditionId(),
           type: "cond" as const,
           field: "",
           op: "=",
@@ -222,6 +225,7 @@ function jsonLogicToConditionTree(
           ? (args[0] as Record<string, unknown>).var
           : args[0];
       return {
+        id: createConditionId(),
         type: "cond",
         field: String(varField ?? ""),
         op:
@@ -242,6 +246,7 @@ function jsonLogicToConditionTree(
           ? (args[0] as Record<string, unknown>).var
           : args[0];
       return {
+        id: createConditionId(),
         type: "cond",
         field: String(varField ?? ""),
         op: op === "in" ? "in" : "regex",

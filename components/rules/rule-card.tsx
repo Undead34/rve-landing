@@ -15,7 +15,7 @@ export function RuleCard({ rule, onOpen }: RuleCardProps) {
       <div className="p-4 flex flex-col gap-3">
         <div className="flex justify-between items-start gap-2">
           <ModeBadge mode={rule.mode} />
-          <button className="icon-btn" onClick={(e) => e.stopPropagation()}>⋯</button>
+          <button type="button" className="icon-btn" onClick={(e) => e.stopPropagation()}>⋯</button>
         </div>
         <div>
           <div className="font-semibold text-[14px] tracking-[-0.01em] mb-[2px]">{rule.name}</div>

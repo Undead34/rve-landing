@@ -6,22 +6,23 @@ import { TerminalWindowControls } from "../atoms/terminal-window-controls"
 const COMMAND = "cargo run --release --bin rve"
 
 type OutputLine = {
+  id: string
   text: string
   className: string
   delay: number
 }
 
 const OUTPUT_LINES: OutputLine[] = [
-  { text: " ", className: "", delay: 80 },
-  { text: "[ rve::core ] Booting Red Velvet Engine v0.1.0...", className: "text-[#8A8A93]", delay: 150 },
-  { text: "[ rve::env  ] Edition: Black Cherry 🍒", className: "text-[#E60023] font-bold", delay: 90 },
-  { text: "[ rve::sys  ] Architecture: Stateless / Zero-Persistence", className: "text-[#F4F4F6]", delay: 120 },
-  { text: "[ rve::sec  ] Loading risk models... 4,096 constraints active.", className: "text-[#F4F4F6]", delay: 200 },
-  { text: "[ rve::net  ] Calibrating latency baseline... OK (0.4ms)", className: "text-[#F4F4F6]", delay: 100 },
-  { text: " ", className: "", delay: 40 },
-  { text: "────────────────────────────────────────────────────────────", className: "text-[#4A0413]", delay: 70 },
-  { text: " ", className: "", delay: 40 },
-  { text: "● » Listening on http://[::]:3439", className: "text-[#F4F4F6]", delay: 110 },
+  { id: "boot-gap-1", text: " ", className: "", delay: 80 },
+  { id: "boot-core", text: "[ rve::core ] Booting Red Velvet Engine v0.1.0...", className: "text-[#8A8A93]", delay: 150 },
+  { id: "boot-env", text: "[ rve::env  ] Edition: Black Cherry 🍒", className: "text-[#E60023] font-bold", delay: 90 },
+  { id: "boot-arch", text: "[ rve::sys  ] Architecture: Stateless / Zero-Persistence", className: "text-[#F4F4F6]", delay: 120 },
+  { id: "boot-models", text: "[ rve::sec  ] Loading risk models... 4,096 constraints active.", className: "text-[#F4F4F6]", delay: 200 },
+  { id: "boot-network", text: "[ rve::net  ] Calibrating latency baseline... OK (0.4ms)", className: "text-[#F4F4F6]", delay: 100 },
+  { id: "boot-gap-2", text: " ", className: "", delay: 40 },
+  { id: "boot-divider", text: "────────────────────────────────────────────────────────────", className: "text-[#4A0413]", delay: 70 },
+  { id: "boot-gap-3", text: " ", className: "", delay: 40 },
+  { id: "boot-listening", text: "● » Listening on http://[::]:3439", className: "text-[#F4F4F6]", delay: 110 },
 ]
 
 export function TerminalOutput() {
@@ -85,7 +86,7 @@ export function TerminalOutput() {
             const isLast = index === visibleOutputLines.length - 1
             const showCursor = isLast && isDone
             return (
-              <div key={index} className={`flex-none ${line.className}`}>
+              <div key={line.id} className={`flex-none ${line.className}`}>
                 {line.text}
                 {showCursor && (
                   <span className="cursor-blink ml-1 inline-block w-1.5 sm:w-2 bg-[#E60023]" />

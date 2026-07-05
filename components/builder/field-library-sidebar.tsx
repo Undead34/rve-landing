@@ -108,6 +108,7 @@ function FieldLibraryItem({ field }: { field: { path: string; description: strin
       style={{ opacity: isDragging ? 0.4 : 1 }}
     >
       <button
+        type="button"
         ref={(node) => {
           dragRef(node);
         }}

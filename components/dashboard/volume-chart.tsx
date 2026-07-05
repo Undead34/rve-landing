@@ -25,11 +25,11 @@ export function VolumeChart({ data }: VolumeChartProps) {
   return (
     <div>
       <div className="flex items-end gap-[6px]" style={{ height: 140 }}>
-        {data.map((d, i) => {
+        {data.map((d) => {
           const total = d.allow + d.review + d.block + d.tag_only
           const h = (total / max) * 100
           return (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1">
+            <div key={d.day} className="flex-1 flex flex-col items-center gap-1">
               <div
                 className="w-full flex flex-col-reverse rounded-[3px_3px_0_0] overflow-hidden min-h-[4px]"
                 style={{ height: `${h}%` }}

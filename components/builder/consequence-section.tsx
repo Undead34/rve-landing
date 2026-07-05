@@ -136,6 +136,7 @@ function TagInput({
         <span key={t} className="badge neutral mono !pr-1">
           {t}
           <button
+            type="button"
             className="inline-grid place-items-center w-[14px] h-[14px] rounded-[var(--radius-sm)] cursor-pointer text-[var(--fg-muted)] bg-transparent border-none hover:bg-[var(--bg-hover)]"
             onClick={() => onChange(tags.filter((x) => x !== t))}
           >

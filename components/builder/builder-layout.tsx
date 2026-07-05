@@ -1,22 +1,42 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Actions, BorderNode, DockLocation, Layout, Model, TabNode, TabSetNode } from "flexlayout-react";
+import {
+  Actions,
+  Action,
+  BorderNode,
+  Layout,
+  Model,
+  TabNode,
+  TabSetNode,
+} from "flexlayout-react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useRuleStore } from "@/lib/stores/rule-store";
 import { SectionsRailPanel } from "./sections-rail-panel";
-import { SectionContentPanel } from "./section-content-panel";
 import { FieldLibrarySidebar } from "./field-library-sidebar";
 import { ValidationPanel } from "./validation-panel";
+
+// Sub-section imports
+import { MetadataSection } from "./metadata-section";
+import { ScopeSection } from "./scope-section";
+import { PolicySection } from "./policy-section";
+import { ConsequenceSection } from "./consequence-section";
+import {
+  GuardConditionCard,
+  ConditionsNested,
+  ConditionsTreeView,
+  ConditionsCodeView,
+  ConditionsSummary,
+} from "./conditions-section";
 
 const DEFAULT_LAYOUT = {
   global: {
     tabEnableClose: false,
     tabEnableRename: false,
-    tabSetEnableMaximize: false,
-    tabSetEnableSingleTabStretch: true,
+    tabSetEnableMaximize: true,
+    tabSetEnableSingleTabStretch: false,
     enableEdgeDock: true,
     enableRotateBorderIcons: false,
   },
@@ -25,7 +45,7 @@ const DEFAULT_LAYOUT = {
       type: "border" as const,
       location: "left" as const,
       id: "border_left",
-      size: 200,
+      size: 240,
       selected: 0,
       enableAutoHide: true,
       enableDrop: true,
@@ -38,18 +58,27 @@ const DEFAULT_LAYOUT = {
           enableClose: false,
           enableRenderOnDemand: false,
         },
+        {
+          type: "tab" as const,
+          id: "field-library",
+          name: "Field Library",
+          component: "field-library",
+          enableClose: false,
+          enableRenderOnDemand: false,
+        },
       ],
     },
     {
       type: "border" as const,
       location: "right" as const,
       size: 300,
-      selected: 0,
+      selected: -1, // Unselected by default
       enableAutoHide: true,
       enableDrop: true,
       children: [
         {
           type: "tab" as const,
+          id: "validation",
           name: "Validation",
           component: "validation",
           enableClose: false,
@@ -64,26 +93,78 @@ const DEFAULT_LAYOUT = {
       {
         type: "tabset" as const,
         id: "main_tabset",
-        weight: 100,
+        weight: 65,
         selected: 0,
-        enableTabStrip: false,
-        enableSingleTabStretch: true,
-        enableDivide: true,
         children: [
           {
             type: "tab" as const,
-            name: "Section Content",
-            component: "section-content",
+            id: "conditions-nested",
+            name: "nested",
+            component: "conditions-nested",
             enableClose: false,
-            enableRenderOnDemand: false,
+          },
+          {
+            type: "tab" as const,
+            id: "conditions-tree",
+            name: "tree",
+            component: "conditions-tree",
+            enableClose: false,
+          },
+          {
+            type: "tab" as const,
+            id: "conditions-code",
+            name: "code",
+            component: "conditions-code",
+            enableClose: false,
+          },
+        ],
+      },
+      {
+        type: "tabset" as const,
+        id: "properties_tabset",
+        weight: 35,
+        selected: 0,
+        children: [
+          {
+            type: "tab" as const,
+            id: "metadata",
+            name: "Metadata",
+            component: "metadata",
+            enableClose: false,
+          },
+          {
+            type: "tab" as const,
+            id: "scope",
+            name: "Scope",
+            component: "scope",
+            enableClose: false,
+          },
+          {
+            type: "tab" as const,
+            id: "policy",
+            name: "Policy",
+            component: "policy",
+            enableClose: false,
+          },
+          {
+            type: "tab" as const,
+            id: "consequence",
+            name: "Consequence",
+            component: "consequence",
+            enableClose: false,
+          },
+          {
+            type: "tab" as const,
+            id: "summary",
+            name: "Summary",
+            component: "summary",
+            enableClose: false,
           },
         ],
       },
     ],
   },
 };
-
-
 
 export function BuilderLayout() {
   const [model] = useState(() => {
@@ -100,101 +181,166 @@ export function BuilderLayout() {
     return Model.fromJson(DEFAULT_LAYOUT);
   });
 
-  const factory = useCallback((node: TabNode) => {
-    const component = node.getComponent();
-    switch (component) {
-      case "sections":
-        return <SectionsRailPanel />;
-      case "section-content":
-        return <SectionContentPanel />;
-      case "field-library":
-        return <FieldLibrarySidebar />;
-      case "validation":
-        return <ValidationPanelWrapper />;
-      default:
-        return null;
-    }
-  }, []);
-
+  const draft = useRuleStore((s) => s.draft);
+  const setConditionTree = useRuleStore((s) => s.setConditionTree);
+  const setIdentity = useRuleStore((s) => s.setIdentity);
+  const setChannels = useRuleStore((s) => s.setChannels);
+  const setPolicy = useRuleStore((s) => s.setPolicy);
+  const setEnforcement = useRuleStore((s) => s.setEnforcement);
   const activeSection = useRuleStore((s) => s.activeSection);
-  const sections = ["metadata", "scope", "policy", "conditions", "consequence"];
+  const setActiveSection = useRuleStore((s) => s.setActiveSection);
 
-  useEffect(() => {
-    try {
-      const fieldLibraryNode = model.getNodeById("field-library");
-      console.log("[FieldLibrary Debug] useEffect activeSection:", activeSection, "nodeExists:", !!fieldLibraryNode);
-      if (activeSection === "conditions") {
-        if (!fieldLibraryNode) {
-          let parentId = "border_left";
-          let index = -1;
+  const factory = useCallback(
+    (node: TabNode) => {
+      const component = node.getComponent();
+      switch (component) {
+        case "sections":
+          return <SectionsRailPanel />;
+        case "field-library":
+          return <FieldLibrarySidebar />;
+        case "validation":
+          return <ValidationPanelWrapper />;
 
-          if (typeof window !== "undefined") {
-            const savedPos = localStorage.getItem("rve-platform:field-library-position");
-            console.log("[FieldLibrary Debug] read savedPos:", savedPos);
-            if (savedPos) {
-              try {
-                const parsed = JSON.parse(savedPos);
-                const parentNode = model.getNodeById(parsed.parentId);
-                console.log("[FieldLibrary Debug] parsed parentId:", parsed.parentId, "parentNodeExists:", !!parentNode);
-                if (parsed.parentId && parentNode) {
-                  parentId = parsed.parentId;
-                  index = typeof parsed.index === "number" ? parsed.index : -1;
-                }
-              } catch (e) {
-                console.warn("Failed to parse field-library position:", e);
-              }
-            }
-          }
-
-          console.log("[FieldLibrary Debug] Adding node to parentId:", parentId, "at index:", index);
-          model.doAction(
-            Actions.addNode(
-              {
-                type: "tab",
-                id: "field-library",
-                name: "Field Library",
-                component: "field-library",
-                enableClose: false,
-              },
-              parentId,
-              DockLocation.CENTER,
-              index
-            )
+        // Conditions sub-views
+        case "conditions-nested":
+          return (
+            <div className="p-6 overflow-auto h-full flex flex-col gap-4">
+              <GuardConditionCard />
+              <ConditionsNested
+                tree={draft.conditionTree}
+                onChange={setConditionTree}
+              />
+            </div>
           );
-        }
-        const updatedFieldLibraryNode = model.getNodeById("field-library");
-        if (updatedFieldLibraryNode) {
-          const parent = updatedFieldLibraryNode.getParent() as BorderNode | TabSetNode | null;
-          if (parent && "getSelectedNode" in parent && (parent as BorderNode | TabSetNode).getSelectedNode() !== updatedFieldLibraryNode) {
-            model.doAction(Actions.selectTab("field-library"));
-          }
-        }
-      } else {
-        if (fieldLibraryNode) {
-          const parent = fieldLibraryNode.getParent();
-          if (parent) {
-            const parentId = parent.getId();
-            const index = parent.getChildren().indexOf(fieldLibraryNode);
-            console.log("[FieldLibrary Debug] Deleting node. Saving position:", { parentId, index });
-            localStorage.setItem(
-              "rve-platform:field-library-position",
-              JSON.stringify({ parentId, index })
-            );
-          }
-          model.doAction(Actions.deleteTab("field-library"));
-        }
-        const sectionsNode = model.getNodeById("sections");
-        if (sectionsNode) {
-          const parent = sectionsNode.getParent() as BorderNode | TabSetNode | null;
-          if (parent && "getSelectedNode" in parent && (parent as BorderNode | TabSetNode).getSelectedNode() !== sectionsNode) {
-            model.doAction(Actions.selectTab("sections"));
-          }
+        case "conditions-tree":
+          return (
+            <div className="p-6 overflow-auto h-full">
+              <ConditionsTreeView tree={draft.conditionTree} />
+            </div>
+          );
+        case "conditions-code":
+          return (
+            <div className="p-6 overflow-auto h-full">
+              <ConditionsCodeView tree={draft.conditionTree} />
+            </div>
+          );
+
+        // Section properties views
+        case "metadata":
+          return (
+            <div className="p-6 overflow-auto h-full">
+              <MetadataSection meta={draft.identity} onChange={setIdentity} />
+            </div>
+          );
+        case "scope":
+          return (
+            <div className="p-6 overflow-auto h-full">
+              <ScopeSection channels={draft.channels} onChange={setChannels} />
+            </div>
+          );
+        case "policy":
+          return (
+            <div className="p-6 overflow-auto h-full">
+              <PolicySection policy={draft.policy} onChange={setPolicy} />
+            </div>
+          );
+        case "consequence":
+          return (
+            <div className="p-6 overflow-auto h-full">
+              <ConsequenceSection
+                consequence={draft.enforcement}
+                onChange={setEnforcement}
+              />
+            </div>
+          );
+        case "summary":
+          return (
+            <div className="p-6 overflow-auto h-full">
+              <ConditionsSummary tree={draft.conditionTree} />
+            </div>
+          );
+        default:
+          return null;
+      }
+    },
+    [
+      draft,
+      setConditionTree,
+      setIdentity,
+      setChannels,
+      setPolicy,
+      setEnforcement,
+    ],
+  );
+
+  const sections = [
+    "metadata",
+    "scope",
+    "policy",
+    "conditions",
+    "consequence",
+    "summary",
+  ];
+
+  // Sync activeSection in store to FlexLayout tabs
+  useEffect(() => {
+    const tabId =
+      activeSection === "conditions" ? "conditions-nested" : activeSection;
+    try {
+      const node = model.getNodeById(tabId);
+      if (node) {
+        const parent = node.getParent() as BorderNode | TabSetNode | null;
+        if (
+          parent &&
+          "getSelectedNode" in parent &&
+          (parent as BorderNode | TabSetNode).getSelectedNode() !== node
+        ) {
+          model.doAction(Actions.selectTab(tabId));
         }
       }
     } catch (e) {
-      console.warn("Could not auto-switch builder tab:", e);
+      console.warn("Could not sync activeSection to FlexLayout:", e);
     }
   }, [activeSection, model]);
+
+  // Sync custom event tab selection triggers
+  useEffect(() => {
+    const handleSelectTab = (e: Event) => {
+      const customEvent = e as CustomEvent<{ tabId: string }>;
+      const { tabId } = customEvent.detail;
+      try {
+        const node = model.getNodeById(tabId);
+        if (node) {
+          model.doAction(Actions.selectTab(tabId));
+        }
+      } catch (err) {
+        console.warn("Failed to select tab in FlexLayout:", tabId, err);
+      }
+    };
+    window.addEventListener("rve-select-tab", handleSelectTab);
+    return () => window.removeEventListener("rve-select-tab", handleSelectTab);
+  }, [model]);
+
+  // Sync FlexLayout selections back to the store activeSection
+  const handleAction = useCallback(
+    (action: Action) => {
+      if (action.type === "FlexLayout_SelectTab") {
+        const tabId = action.data.tabNode;
+        const sectionId =
+          tabId === "conditions-nested" ||
+          tabId === "conditions-tree" ||
+          tabId === "conditions-code"
+            ? "conditions"
+            : tabId;
+
+        if (sections.includes(sectionId)) {
+          setActiveSection(sectionId);
+        }
+      }
+      return action;
+    },
+    [setActiveSection],
+  );
 
   useHotkeys(
     "alt+shift+left,alt+shift+h",
@@ -203,7 +349,7 @@ export function BuilderLayout() {
       if (idx > 0) useRuleStore.getState().setActiveSection(sections[idx - 1]);
     },
     { enableOnFormTags: true },
-    [activeSection, sections]
+    [activeSection, sections],
   );
 
   useHotkeys(
@@ -214,27 +360,13 @@ export function BuilderLayout() {
         useRuleStore.getState().setActiveSection(sections[idx + 1]);
     },
     { enableOnFormTags: true },
-    [activeSection, sections]
+    [activeSection, sections],
   );
 
   const handleModelChange = useCallback((model: Model) => {
     try {
       const json = model.toJson();
       localStorage.setItem("rve-platform:builder-layout", JSON.stringify(json));
-
-      const fieldLibraryNode = model.getNodeById("field-library");
-      if (fieldLibraryNode) {
-        const parent = fieldLibraryNode.getParent();
-        if (parent) {
-          const parentId = parent.getId();
-          const index = parent.getChildren().indexOf(fieldLibraryNode);
-          console.log("[FieldLibrary Debug] handleModelChange. Saving position:", { parentId, index });
-          localStorage.setItem(
-            "rve-platform:field-library-position",
-            JSON.stringify({ parentId, index })
-          );
-        }
-      }
     } catch (e) {
       console.error("Failed to save builder layout:", e);
     }
@@ -246,6 +378,7 @@ export function BuilderLayout() {
         <Layout
           model={model}
           factory={factory}
+          onAction={handleAction}
           classNameMapper={(cls) => cls}
           onModelChange={handleModelChange}
         />

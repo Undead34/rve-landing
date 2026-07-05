@@ -4,7 +4,7 @@ import { useRuleStore } from "@/lib/stores/rule-store";
 import { MetadataSection } from "./metadata-section";
 import { ScopeSection } from "./scope-section";
 import { PolicySection } from "./policy-section";
-import { ConditionsSection } from "./conditions-section";
+import { ConditionsSection, ConditionsSummary } from "./conditions-section";
 import { ConsequenceSection } from "./consequence-section";
 
 export function SectionContentPanel() {
@@ -17,6 +17,12 @@ export function SectionContentPanel() {
   const setEnforcement = useRuleStore((s) => s.setEnforcement);
 
   switch (activeSection) {
+    case "summary":
+      return (
+        <div className="p-6 overflow-auto h-full">
+          <ConditionsSummary tree={draft.conditionTree} />
+        </div>
+      );
     case "metadata":
       return (
         <div className="p-6 overflow-auto h-full">

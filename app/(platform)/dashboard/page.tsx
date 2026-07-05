@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Sidebar } from "@/components/layout/sidebar";
 import { SidebarFooter } from "@/components/layout/sidebar-footer";
@@ -28,6 +28,18 @@ import { NAV_ITEMS, ADMIN_ITEMS } from "@/lib/navigation";
 
 const CHANNELS = ["web", "mobile", "api", "branch", "atm", "callcenter"];
 const repository = new HttpRuleRepository();
+const DASHBOARD_SIDEBAR = (
+  <Sidebar
+    currentRoute="dashboard"
+    navItems={NAV_ITEMS}
+    adminItems={ADMIN_ITEMS}
+    footer={<SidebarFooter />}
+  />
+);
+const DASHBOARD_BREADCRUMBS = [
+  { label: "Red Velvet" },
+  { label: "Overview" },
+];
 
 export default function DashboardPage() {
   const [engineState, setEngineState] = useState(mockEngine);
@@ -101,24 +113,18 @@ export default function DashboardPage() {
   );
   const totalReviews = dailyVolume.reduce((s, d) => s + d.review, 0);
   const totalBlocks = dailyVolume.reduce((s, d) => s + d.block, 0);
+  const dashboardTopbar = useMemo(
+    () => (
+      <Topbar
+        breadcrumbs={DASHBOARD_BREADCRUMBS}
+        engineStatus={{ ready: engineReady, rulesCount: engineState.rules_loaded }}
+      />
+    ),
+    [engineReady, engineState.rules_loaded],
+  );
 
   return (
-    <AppShell
-      sidebar={
-        <Sidebar
-          currentRoute="dashboard"
-          navItems={NAV_ITEMS}
-          adminItems={ADMIN_ITEMS}
-          footer={<SidebarFooter />}
-        />
-      }
-      topbar={
-        <Topbar
-          breadcrumbs={[{ label: "Red Velvet" }, { label: "Overview" }]}
-          engineStatus={{ ready: engineReady, rulesCount: engineState.rules_loaded }}
-        />
-      }
-    >
+    <AppShell sidebar={DASHBOARD_SIDEBAR} topbar={dashboardTopbar}>
       <div className="page-header flex items-center justify-between mb-6">
         <div>
           <h1 className="text-(--fs-xl) font-semibold tracking-[-0.02em] m-0">
@@ -170,7 +176,10 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>Recent activity</CardTitle>
-              <button className="w-6.5 h-6.5 grid place-items-center rounded-sm border-none bg-transparent text-(--fg-muted) hover:bg-(--bg-hover) hover:text-foreground cursor-pointer transition-colors">
+              <button
+                type="button"
+                className="w-6.5 h-6.5 grid place-items-center rounded-sm border-none bg-transparent text-(--fg-muted) hover:bg-(--bg-hover) hover:text-foreground cursor-pointer transition-colors"
+              >
                 <svg
                   width="14"
                   height="14"

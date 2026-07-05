@@ -16,6 +16,22 @@ const BuilderLayout = dynamic(
   () => import("@/components/builder/builder-layout").then((m) => m.BuilderLayout),
   { ssr: false }
 );
+const BUILDER_SIDEBAR = (
+  <Sidebar
+    currentRoute="builder"
+    navItems={NAV_ITEMS}
+    adminItems={ADMIN_ITEMS}
+    footer={<SidebarFooter />}
+  />
+);
+const BUILDER_TOPBAR = (
+  <Topbar
+    breadcrumbs={[
+      { label: "Red Velvet" },
+      { label: "Rule builder" },
+    ]}
+  />
+);
 
 export default function BuilderPage() {
   const draft = useRuleStore((s) => s.draft);
@@ -39,25 +55,16 @@ export default function BuilderPage() {
     }
   }, []);
 
+  useEffect(() => {
+    const onSave = () => {
+      handleSave();
+    };
+    window.addEventListener("rve-save-rule", onSave);
+    return () => window.removeEventListener("rve-save-rule", onSave);
+  }, [handleSave]);
+
   return (
-    <AppShell noPad
-      sidebar={
-        <Sidebar
-          currentRoute="builder"
-          navItems={NAV_ITEMS}
-          adminItems={ADMIN_ITEMS}
-          footer={<SidebarFooter />}
-        />
-      }
-      topbar={
-        <Topbar
-          breadcrumbs={[
-            { label: "Red Velvet" },
-            { label: "Rule builder" },
-          ]}
-        />
-      }
-    >
+    <AppShell noPad sidebar={BUILDER_SIDEBAR} topbar={BUILDER_TOPBAR}>
       <div className="flex flex-col flex-1 min-h-0">
         {/* Rule header */}
         <div
@@ -119,14 +126,15 @@ export default function BuilderPage() {
             </div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button className="btn sm" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", fontSize: 13, fontWeight: 500, color: "var(--fg)", background: "var(--bg-elev)", border: "1px solid var(--border-strong)", borderRadius: 6, cursor: "pointer" }}>
+            <button type="button" className="btn sm" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", fontSize: 13, fontWeight: 500, color: "var(--fg)", background: "var(--bg-elev)", border: "1px solid var(--border-strong)", borderRadius: 6, cursor: "pointer" }}>
               <Icon name="play" size={14} />
               Simulate
             </button>
-            <button className="btn sm ghost" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", fontSize: 13, fontWeight: 500, color: "var(--fg)", background: "transparent", border: "none", borderRadius: 6, cursor: "pointer" }}>
+            <button type="button" className="btn sm ghost" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", fontSize: 13, fontWeight: 500, color: "var(--fg)", background: "transparent", border: "none", borderRadius: 6, cursor: "pointer" }}>
               Discard
             </button>
             <button
+              type="button"
               onClick={handleSave}
               disabled={isCrudSaving}
               className="btn sm accent"
