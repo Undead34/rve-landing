@@ -31,13 +31,13 @@ export function RuleFilters({
   onViewChange,
 }: RuleFiltersProps) {
   return (
-    <div className="bg-[var(--bg-elev)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden mb-4">
+    <div className="bg-(--bg-elev) border border-(--border) rounded-(--radius-lg) overflow-hidden mb-4">
       <div className="p-3 flex items-center gap-2 flex-wrap">
         <div
           className="relative flex-1 min-w-[240px]"
           style={{ flex: "1 1 320px" }}
         >
-          <span className="absolute left-[10px] top-1/2 -translate-y-1/2 text-[var(--fg-subtle)]">
+          <span className="absolute left-[10px] top-1/2 -translate-y-1/2 text-(--fg-subtle)">
             <Icon name="search" size={12} />
           </span>
           <Input
@@ -52,7 +52,7 @@ export function RuleFilters({
         </div>
 
         <select
-          className="px-[10px] py-[6px] text-[var(--fs-md)] rounded-[var(--radius-md)] border border-[var(--border-strong)] bg-[var(--bg-elev)] outline-none cursor-pointer"
+          className="px-[10px] py-[6px] text-(--fs-md) rounded-(--radius-md) border border-(--border-strong) bg-(--bg-elev) outline-none cursor-pointer"
           value={modeFilter}
           onChange={(e) => onModeFilterChange(e.target.value)}
         >
@@ -64,7 +64,7 @@ export function RuleFilters({
         </select>
 
         <select
-          className="px-[10px] py-[6px] text-[var(--fs-md)] rounded-[var(--radius-md)] border border-[var(--border-strong)] bg-[var(--bg-elev)] outline-none cursor-pointer"
+          className="px-[10px] py-[6px] text-(--fs-md) rounded-(--radius-md) border border-(--border-strong) bg-(--bg-elev) outline-none cursor-pointer"
           value={channelFilter}
           onChange={(e) => onChannelFilterChange(e.target.value)}
         >
@@ -77,7 +77,7 @@ export function RuleFilters({
         </select>
 
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-[12px] text-[var(--fg-muted)]">
+          <span className="text-[12px] text-(--fg-muted)">
             {filtered} of {total}
           </span>
           <Segmented

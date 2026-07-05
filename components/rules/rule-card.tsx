@@ -9,7 +9,7 @@ interface RuleCardProps {
 export function RuleCard({ rule, onOpen }: RuleCardProps) {
   return (
     <div
-      className="bg-[var(--bg-elev)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden cursor-pointer hover:shadow-sm transition-shadow"
+      className="bg-(--bg-elev) border border-(--border) rounded-(--radius-lg) overflow-hidden cursor-pointer hover:shadow-sm transition-shadow"
       onClick={() => onOpen(rule.code)}
     >
       <div className="p-4 flex flex-col gap-3">
@@ -27,7 +27,7 @@ export function RuleCard({ rule, onOpen }: RuleCardProps) {
           <div className="font-semibold text-[14px] tracking-[-0.01em] mb-[2px]">
             {rule.name}
           </div>
-          <div className="font-mono text-[11px] text-[var(--fg-muted)]">
+          <div className="font-mono text-[11px] text-(--fg-muted)">
             {rule.code} @ {rule.version}
           </div>
         </div>
@@ -38,9 +38,9 @@ export function RuleCard({ rule, onOpen }: RuleCardProps) {
             </Badge>
           ))}
         </div>
-        <div className="flex justify-between items-center pt-2 border-t border-[var(--border-faint)]">
+        <div className="flex justify-between items-center pt-2 border-t border-(--border-faint)">
           <ActionBadge action={rule.action} />
-          <div className="flex gap-3 text-[11px] text-[var(--fg-muted)] font-mono">
+          <div className="flex gap-3 text-[11px] text-(--fg-muted) font-mono">
             <span title="Score impact">⚖ {rule.score_impact}</span>
             <span title="Rollout">↗ {rule.rollout}%</span>
             <span title="Hits 7d">⊙ {rule.hits_7d.toLocaleString()}</span>

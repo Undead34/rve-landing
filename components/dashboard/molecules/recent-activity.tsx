@@ -29,7 +29,7 @@ export function RecentActivity({ items }: RecentActivityProps) {
         return (
           <div
             key={a.id}
-            className="grid items-center gap-3 px-4 py-3 hover:bg-[var(--bg-hover)]"
+            className="grid items-center gap-3 px-4 py-3 hover:bg-(--bg-hover)"
             style={{
               gridTemplateColumns: "70px 1fr auto",
               borderBottom: last ? "none" : "1px solid var(--border-faint)",
@@ -44,13 +44,13 @@ export function RecentActivity({ items }: RecentActivityProps) {
             <div className="min-w-0">
               <div className="font-mono text-[12px] truncate">
                 {a.rule}
-                <span className="text-[var(--fg-subtle)]"> @ {a.version}</span>
+                <span className="text-(--fg-subtle)"> @ {a.version}</span>
               </div>
-              <div className="text-[11px] text-[var(--fg-muted)] truncate">
+              <div className="text-[11px] text-(--fg-muted) truncate">
                 {a.note} · <span className="font-mono">{a.who}</span>
               </div>
             </div>
-            <div className="text-[11px] text-[var(--fg-subtle)]">{a.when}</div>
+            <div className="text-[11px] text-(--fg-subtle)">{a.when}</div>
           </div>
         )
       })}

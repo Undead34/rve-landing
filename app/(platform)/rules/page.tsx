@@ -233,13 +233,13 @@ export default function RuleLibraryPage() {
       />
 
       {loading && rules.length === 0 ? (
-        <div className="flex items-center justify-center p-12 text-[var(--fg-muted)]">
+        <div className="flex items-center justify-center p-12 text-(--fg-muted)">
           Loading rules repository...
         </div>
       ) : filteredRules.length === 0 ? (
-        <div className="bg-[var(--bg-elev)] border border-[var(--border)] rounded-[var(--radius-lg)] p-12 text-center">
-          <div className="text-[var(--fs-lg)] font-medium mb-2">No rules match the filters</div>
-          <p className="text-[var(--fg-muted)] mb-4">Try clearing filters or search term to see other rules.</p>
+        <div className="bg-(--bg-elev) border border-(--border) rounded-(--radius-lg) p-12 text-center">
+          <div className="text-(--fs-lg) font-medium mb-2">No rules match the filters</div>
+          <p className="text-(--fg-muted) mb-4">Try clearing filters or search term to see other rules.</p>
           <Button onClick={() => { setSearch(""); setModeFilter("all"); setChannelFilter("all"); }}>
             Clear filters
           </Button>

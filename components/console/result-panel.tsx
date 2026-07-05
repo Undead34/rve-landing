@@ -57,14 +57,14 @@ export function ResultPanel({ decision, trace, onNavigate }: ResultPanelProps) {
 
   if (!decision) {
     return (
-      <aside className="border-l border-[var(--border)] bg-[var(--bg-elev)]">
+      <aside className="border-l border-(--border) bg-(--bg-elev)">
         <div className="flex flex-col items-center justify-center h-full gap-3 p-8 text-center">
-          <div className="w-12 h-12 rounded-full bg-[var(--bg-subtle)] text-[var(--fg-muted)] grid place-items-center">
+          <div className="w-12 h-12 rounded-full bg-(--bg-subtle) text-(--fg-muted) grid place-items-center">
             <Icon name="simulator" size={20} />
           </div>
           <div>
             <div className="text-[14px] font-medium">Ready to evaluate</div>
-            <div className="text-[12px] text-[var(--fg-muted)] mt-[2px]">
+            <div className="text-[12px] text-(--fg-muted) mt-[2px]">
               Build an event and press Evaluate.
             </div>
           </div>
@@ -76,14 +76,14 @@ export function ResultPanel({ decision, trace, onNavigate }: ResultPanelProps) {
   const outcomeColor = outcomeColors[decision.outcome] ?? "var(--fg-muted)";
 
   return (
-    <aside className="border-l border-[var(--border)] bg-[var(--bg-elev)] flex flex-col overflow-hidden">
+    <aside className="border-l border-(--border) bg-(--bg-elev) flex flex-col overflow-hidden">
       <div
-        className="p-5 border-b border-[var(--border-faint)]"
+        className="p-5 border-b border-(--border-faint)"
         style={{
           background: `color-mix(in srgb, ${outcomeColor} 6%, var(--bg-elev))`,
         }}
       >
-        <div className="text-[11px] uppercase tracking-[0.06em] text-[var(--fg-muted)] mb-[6px]">
+        <div className="text-[11px] uppercase tracking-[0.06em] text-(--fg-muted) mb-[6px]">
           Decision
         </div>
         <div className="flex items-baseline gap-3 mb-2">
@@ -93,19 +93,19 @@ export function ResultPanel({ decision, trace, onNavigate }: ResultPanelProps) {
           >
             {decision.outcome}
           </span>
-          <span className="font-mono text-[14px] text-[var(--fg-muted)]">
+          <span className="font-mono text-[14px] text-(--fg-muted)">
             {decision.event_id}
           </span>
         </div>
 
         <div className="mt-3">
           <div className="flex justify-between mb-1">
-            <span className="text-[11px] text-[var(--fg-muted)]">Score</span>
+            <span className="text-[11px] text-(--fg-muted)">Score</span>
             <span className="font-mono text-[13px] font-semibold">
               {decision.score} / 10
             </span>
           </div>
-          <div className="h-[6px] bg-[var(--bg-subtle)] rounded-[3px] overflow-hidden relative">
+          <div className="h-[6px] bg-(--bg-subtle) rounded-[3px] overflow-hidden relative">
             <div
               className="h-full rounded-[3px]"
               style={{
@@ -124,7 +124,7 @@ export function ResultPanel({ decision, trace, onNavigate }: ResultPanelProps) {
               />
             ))}
           </div>
-          <div className="flex justify-between text-[10px] text-[var(--fg-subtle)] mt-1">
+          <div className="flex justify-between text-[10px] text-(--fg-subtle) mt-1">
             <span>0 · allow</span>
             <span style={{ marginLeft: 30 }}>3 · review</span>
             <span>7 · block</span>
@@ -132,7 +132,7 @@ export function ResultPanel({ decision, trace, onNavigate }: ResultPanelProps) {
           </div>
         </div>
 
-        <div className="flex gap-3 mt-[14px] text-[11px] text-[var(--fg-muted)]">
+        <div className="flex gap-3 mt-[14px] text-[11px] text-(--fg-muted)">
           <span>
             ⏱ <span className="font-mono">{decision.duration_ms}ms</span>
           </span>
@@ -143,8 +143,8 @@ export function ResultPanel({ decision, trace, onNavigate }: ResultPanelProps) {
         </div>
       </div>
 
-      <div className="p-4 border-b border-[var(--border-faint)]">
-        <h3 className="m-0 mb-[10px] text-[12px] font-semibold uppercase tracking-[0.05em] text-[var(--fg-muted)]">
+      <div className="p-4 border-b border-(--border-faint)">
+        <h3 className="m-0 mb-[10px] text-[12px] font-semibold uppercase tracking-[0.05em] text-(--fg-muted)">
           Rules hit
         </h3>
         <div className="flex flex-col gap-[6px]">
@@ -154,13 +154,13 @@ export function ResultPanel({ decision, trace, onNavigate }: ResultPanelProps) {
               <div
                 key={`${r.rule_id}:${r.version}`}
                 onClick={() => onNavigate?.(r.rule_id)}
-                className="p-[8px_10px] border border-[var(--border)] rounded-[6px] cursor-pointer bg-[var(--bg-elev)]"
+                className="p-[8px_10px] border border-(--border) rounded-[6px] cursor-pointer bg-(--bg-elev)"
                 style={{ opacity: isMiss ? 0.6 : 1 }}
               >
                 <div className="flex justify-between mb-1">
                   <div className="font-mono text-[11px] truncate">
                     {r.rule_id}
-                    <span className="text-[var(--fg-subtle)]">
+                    <span className="text-(--fg-subtle)">
                       {" "}
                       @ {r.version}
                     </span>
@@ -181,7 +181,7 @@ export function ResultPanel({ decision, trace, onNavigate }: ResultPanelProps) {
                     {r.severity}
                   </Badge>
                   {isMiss && (
-                    <span className="text-[10px] text-[var(--fg-subtle)] ml-auto">
+                    <span className="text-[10px] text-(--fg-subtle) ml-auto">
                       {r.reason}
                     </span>
                   )}
@@ -205,7 +205,7 @@ export function ResultPanel({ decision, trace, onNavigate }: ResultPanelProps) {
               name={traceOpen ? "chevron-down" : "chevron-right"}
               size={12}
             />
-            <span className="text-[12px] font-semibold uppercase tracking-[0.05em] text-[var(--fg-muted)]">
+            <span className="text-[12px] font-semibold uppercase tracking-[0.05em] text-(--fg-muted)">
               Execution trace
             </span>
             <Badge kind="neutral" mono>
@@ -215,7 +215,7 @@ export function ResultPanel({ decision, trace, onNavigate }: ResultPanelProps) {
           <Button size="sm" kind="ghost" icon="download" />
         </div>
         {traceOpen && (
-          <div className="flex-1 overflow-y-auto py-2 bg-[var(--bg-inset)]">
+          <div className="flex-1 overflow-y-auto py-2 bg-(--bg-inset)">
             {trace.map((t, index) => (
               <TraceRow
                 key={t.step}
@@ -239,7 +239,7 @@ function TraceRow({ step, last }: { step: TraceStep; last: boolean }) {
         borderBottom: last ? "none" : "1px solid var(--border-faint)",
       }}
     >
-      <div className="font-mono text-[10px] text-[var(--fg-subtle)] text-right pt-[1px]">
+      <div className="font-mono text-[10px] text-(--fg-subtle) text-right pt-[1px]">
         {String(step.step).padStart(2, "0")}
       </div>
       <div>
@@ -257,14 +257,14 @@ function TraceRow({ step, last }: { step: TraceStep; last: boolean }) {
         >
           {step.action}
           {step.hit && (
-            <span className="text-[var(--status-active)] ml-[6px]">● HIT</span>
+            <span className="text-(--status-active) ml-[6px]">● HIT</span>
           )}
         </div>
-        <div className="text-[10px] text-[var(--fg-muted)] mt-[1px]">
+        <div className="text-[10px] text-(--fg-muted) mt-[1px]">
           {step.detail}
         </div>
       </div>
-      <div className="font-mono text-[10px] text-[var(--fg-subtle)] whitespace-nowrap">
+      <div className="font-mono text-[10px] text-(--fg-subtle) whitespace-nowrap">
         {step.duration_us}μs
       </div>
     </div>

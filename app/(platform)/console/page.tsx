@@ -319,12 +319,12 @@ export default function DecisionConsolePage() {
       >
         {/* Left column: Event editor */}
         <div className="flex flex-col overflow-hidden">
-          <div className="flex items-center justify-between gap-4 px-6 py-[14px] border-b border-[var(--border)] bg-[var(--bg-elev)] shrink-0">
+          <div className="flex items-center justify-between gap-4 px-6 py-[14px] border-b border-(--border) bg-(--bg-elev) shrink-0">
             <div>
               <h1 className="text-lg font-semibold tracking-[-0.01em] m-0">
                 Decision Console
               </h1>
-              <p className="text-[12px] text-[var(--fg-muted)] m-0 mt-[2px]">
+              <p className="text-[12px] text-(--fg-muted) m-0 mt-[2px]">
                 Simulate events against the current rule set. Engine version{" "}
                 <span className="font-mono">v3.4.1</span>
               </p>
@@ -355,18 +355,18 @@ export default function DecisionConsolePage() {
             style={{ gridTemplateColumns: "180px 1fr" }}
           >
             {/* Sidebar section menu */}
-            <div className="border-r border-[var(--border)] p-3 bg-[var(--bg-elev)] overflow-y-auto">
-              <div className="text-[var(--fs-xs)] text-[var(--fg-subtle)] uppercase tracking-[0.06em] px-1 pb-2 font-medium">
+            <div className="border-r border-(--border) p-3 bg-(--bg-elev) overflow-y-auto">
+              <div className="text-(--fs-xs) text-(--fg-subtle) uppercase tracking-[0.06em] px-1 pb-2 font-medium">
                 Editor type
               </div>
               <div className="flex flex-col gap-[2px] mb-4">
                 <button
                   type="button"
                   onClick={() => setActiveSection("json")}
-                  className={`flex items-center gap-[10px] w-full px-2 py-[6px] rounded-[var(--radius-sm)] cursor-pointer select-none text-[var(--fs-md)] border-none text-left bg-transparent ${
+                  className={`flex items-center gap-[10px] w-full px-2 py-[6px] rounded-(--radius-sm) cursor-pointer select-none text-(--fs-md) border-none text-left bg-transparent ${
                     activeSection === "json"
-                      ? "bg-[var(--bg-active)] text-[var(--fg)] font-medium"
-                      : "text-[var(--fg-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--fg)]"
+                      ? "bg-(--bg-active) text-(--fg) font-medium"
+                      : "text-(--fg-muted) hover:bg-(--bg-hover) hover:text-(--fg)"
                   }`}
                 >
                   <Icon name="code" size={14} />
@@ -374,15 +374,15 @@ export default function DecisionConsolePage() {
                 </button>
               </div>
 
-              <div className="h-[1px] bg-[var(--border-faint)] my-3" />
-              <div className="text-[var(--fs-xs)] text-[var(--fg-subtle)] uppercase tracking-[0.06em] px-1 pb-2 font-medium">
+              <div className="h-[1px] bg-(--border-faint) my-3" />
+              <div className="text-(--fs-xs) text-(--fg-subtle) uppercase tracking-[0.06em] px-1 pb-2 font-medium">
                 Simulation History
               </div>
               <div className="flex flex-col gap-2">
                 {recentSimulations.map((s) => (
                   <div
                     key={s.id}
-                    className="p-2 border border-[var(--border-faint)] rounded bg-[var(--bg-inset)] hover:bg-[var(--bg-hover)] cursor-pointer transition-colors"
+                    className="p-2 border border-(--border-faint) rounded bg-(--bg-inset) hover:bg-(--bg-hover) cursor-pointer transition-colors"
                     onClick={() => {
                       // Parse standard outcomes
                       const mockSim = structuredClone(
@@ -400,17 +400,17 @@ export default function DecisionConsolePage() {
                     }}
                   >
                     <div className="flex justify-between items-center gap-1 mb-1">
-                      <span className="font-mono text-[10px] text-[var(--fg-subtle)]">
+                      <span className="font-mono text-[10px] text-(--fg-subtle)">
                         {s.id}
                       </span>
                       <Badge kind={s.outcome as BadgeKind} dot>
                         {s.outcome}
                       </Badge>
                     </div>
-                    <div className="text-[11px] text-[var(--fg-muted)] leading-tight truncate">
+                    <div className="text-[11px] text-(--fg-muted) leading-tight truncate">
                       {s.label}
                     </div>
-                    <div className="text-[10px] text-[var(--fg-subtle)] mt-1">
+                    <div className="text-[10px] text-(--fg-subtle) mt-1">
                       {s.when} · score {s.score}
                     </div>
                   </div>
@@ -422,7 +422,7 @@ export default function DecisionConsolePage() {
             <div className="flex-1 overflow-hidden p-6 flex flex-col gap-4">
               <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex items-center justify-between mb-2 shrink-0">
-                  <span className="text-[12px] font-semibold text-[var(--fg-muted)] uppercase tracking-[0.04em]">
+                  <span className="text-[12px] font-semibold text-(--fg-muted) uppercase tracking-[0.04em]">
                     Request Payload (application/json)
                   </span>
                   {jsonError && (
@@ -432,10 +432,10 @@ export default function DecisionConsolePage() {
                   )}
                 </div>
                 <textarea
-                  className={`flex-1 font-mono text-[13px] leading-relaxed p-4 rounded-lg bg-[var(--bg-inset)] border outline-none resize-none overflow-y-auto ${
+                  className={`flex-1 font-mono text-[13px] leading-relaxed p-4 rounded-lg bg-(--bg-inset) border outline-none resize-none overflow-y-auto ${
                     jsonError
                       ? "border-red-500/50 focus:border-red-500"
-                      : "border-[var(--border)] focus:border-[var(--accent)]"
+                      : "border-(--border) focus:border-(--accent)"
                   }`}
                   value={jsonContent}
                   onChange={(e) => handleJsonChange(e.target.value)}

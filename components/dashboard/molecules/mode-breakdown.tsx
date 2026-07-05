@@ -19,7 +19,7 @@ const items = [
 export function ModeBreakdown({ counts }: ModeBreakdownProps) {
   return (
     <div>
-      <div className="flex h-[10px] rounded-[5px] overflow-hidden mb-4 bg-[var(--bg-subtle)]">
+      <div className="flex h-[10px] rounded-[5px] overflow-hidden mb-4 bg-(--bg-subtle)">
         {items.map((i) => (
           <div
             key={i.key}
@@ -36,19 +36,19 @@ export function ModeBreakdown({ counts }: ModeBreakdownProps) {
         {items.map((i) => (
           <div
             key={i.key}
-            className="p-[10px_12px] border border-[var(--border)] rounded-lg"
+            className="p-[10px_12px] border border-(--border) rounded-lg"
           >
             <div className="flex items-center gap-[6px]">
               <span
                 className="w-[6px] h-[6px] rounded-full"
                 style={{ background: `var(--status-${i.key})` }}
               />
-              <span className="text-[12px] text-[var(--fg-muted)]">{i.label}</span>
+              <span className="text-[12px] text-(--fg-muted)">{i.label}</span>
             </div>
             <div className="text-[22px] font-semibold tracking-[-0.02em] tabular-nums mt-1">
               {counts[i.key]}
             </div>
-            <div className="text-[11px] text-[var(--fg-subtle)]">{i.hint}</div>
+            <div className="text-[11px] text-(--fg-subtle)">{i.hint}</div>
           </div>
         ))}
       </div>

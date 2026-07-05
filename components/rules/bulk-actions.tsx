@@ -20,8 +20,8 @@ export function BulkActions({
   if (count === 0) return null;
 
   return (
-    <div className="flex items-center gap-3 px-4 py-[10px] mb-3 bg-[var(--accent-soft)] border border-[var(--accent-border)] rounded-lg">
-      <strong className="text-[13px] text-[var(--accent)]">
+    <div className="flex items-center gap-3 px-4 py-[10px] mb-3 bg-(--accent-soft) border border-(--accent-border) rounded-lg">
+      <strong className="text-[13px] text-(--accent)">
         {count} selected
       </strong>
       <div className="flex items-center ml-4 gap-[6px]">

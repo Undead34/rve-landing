@@ -12,7 +12,7 @@ interface VolumeChartProps {
 
 function LegendDot({ color, label }: { color: string; label: string }) {
   return (
-    <span className="inline-flex items-center gap-[6px] text-[12px] text-[var(--fg-muted)]">
+    <span className="inline-flex items-center gap-[6px] text-[12px] text-(--fg-muted)">
       <span className="w-[8px] h-[8px] rounded-[2px]" style={{ background: color }} />
       {label}
     </span>
@@ -51,14 +51,14 @@ export function VolumeChart({ data }: VolumeChartProps) {
                   style={{ height: `${(d.block / total) * 100}%`, background: "var(--status-suspended)" }}
                 />
               </div>
-              <div className="text-[10px] text-[var(--fg-subtle)] tabular-nums">
+              <div className="text-[10px] text-(--fg-subtle) tabular-nums">
                 {d.day.split(" ")[1]}
               </div>
             </div>
           )
         })}
       </div>
-      <div className="flex gap-4 mt-4 text-[12px] text-[var(--fg-muted)]">
+      <div className="flex gap-4 mt-4 text-[12px] text-(--fg-muted)">
         <LegendDot color="var(--status-active)" label="Allow" />
         <LegendDot color="var(--status-staged)" label="Review" />
         <LegendDot color="var(--action-tag)" label="Tag only" />

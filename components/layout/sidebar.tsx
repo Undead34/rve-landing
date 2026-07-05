@@ -27,23 +27,23 @@ export function Sidebar({
 }: SidebarProps) {
   return (
     <nav
-      className="flex flex-col overflow-hidden bg-[var(--bg-elev)] border-r border-[var(--border)]"
+      className="flex flex-col overflow-hidden bg-(--bg-elev) border-r border-(--border)"
       style={{ width: "var(--sidebar-w)" }}
     >
-      <div className="flex items-center gap-2 px-3 py-[14px] border-b border-[var(--border-faint)]">
-        <div className="w-[22px] h-[22px] rounded-[5px] bg-[var(--accent)] text-[var(--fg-inverse)] grid place-items-center font-mono font-bold text-[11px] tracking-[-0.02em] shrink-0">
+      <div className="flex items-center gap-2 px-3 py-[14px] border-b border-(--border-faint)">
+        <div className="w-[22px] h-[22px] rounded-[5px] bg-(--accent) text-(--fg-inverse) grid place-items-center font-mono font-bold text-[11px] tracking-[-0.02em] shrink-0">
           RV
         </div>
-        <span className="font-semibold text-[var(--fs-lg)] tracking-[-0.01em]">
+        <span className="font-semibold text-(--fs-lg) tracking-[-0.01em]">
           Red Velvet
         </span>
-        <span className="font-mono text-[10px] text-[var(--fg-subtle)] px-[5px] py-[1px] bg-[var(--bg-subtle)] rounded-[3px] ml-auto">
+        <span className="font-mono text-[10px] text-(--fg-subtle) px-[5px] py-[1px] bg-(--bg-subtle) rounded-[3px] ml-auto">
           v3.4.1
         </span>
       </div>
 
       <div className="px-[6px] py-3 flex flex-col gap-[2px]">
-        <div className="text-[var(--fs-xs)] text-[var(--fg-subtle)] uppercase tracking-[0.06em] px-2 pb-1 font-medium">
+        <div className="text-(--fs-xs) text-(--fg-subtle) uppercase tracking-[0.06em] px-2 pb-1 font-medium">
           Workspace
         </div>
         {navItems.map((item) => {
@@ -53,16 +53,16 @@ export function Sidebar({
               key={item.id}
               href={href}
               className={[
-                "flex items-center gap-[10px] px-2 py-[6px] rounded-[var(--radius-sm)] cursor-pointer select-none text-[var(--fs-md)] no-underline",
+                "flex items-center gap-[10px] px-2 py-[6px] rounded-(--radius-sm) cursor-pointer select-none text-(--fs-md) no-underline",
                 currentRoute === item.id
-                  ? "bg-[var(--bg-active)] text-[var(--fg)] font-medium"
-                  : "text-[var(--fg-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--fg)]",
+                  ? "bg-(--bg-active) text-(--fg) font-medium"
+                  : "text-(--fg-muted) hover:bg-(--bg-hover) hover:text-(--fg)",
               ].join(" ")}
             >
               <Icon name={item.icon} />
               <span>{item.label}</span>
               {item.badge && (
-                <span className="ml-auto text-[10px] text-[var(--fg-subtle)] font-mono">
+                <span className="ml-auto text-[10px] text-(--fg-subtle) font-mono">
                   {item.badge}
                 </span>
               )}
@@ -72,8 +72,8 @@ export function Sidebar({
       </div>
 
       {adminItems && adminItems.length > 0 && (
-        <div className="border-t border-[var(--border-faint)] px-[6px] py-3 flex flex-col gap-[2px]">
-          <div className="text-[var(--fs-xs)] text-[var(--fg-subtle)] uppercase tracking-[0.06em] px-2 pb-1 font-medium">
+        <div className="border-t border-(--border-faint) px-[6px] py-3 flex flex-col gap-[2px]">
+          <div className="text-(--fs-xs) text-(--fg-subtle) uppercase tracking-[0.06em] px-2 pb-1 font-medium">
             Admin
           </div>
           {adminItems.map((item) => {
@@ -83,10 +83,10 @@ export function Sidebar({
                 key={item.id}
                 href={href}
                 className={[
-                  "flex items-center gap-[10px] px-2 py-[6px] rounded-[var(--radius-sm)] cursor-pointer select-none text-[var(--fs-md)] no-underline",
+                  "flex items-center gap-[10px] px-2 py-[6px] rounded-(--radius-sm) cursor-pointer select-none text-(--fs-md) no-underline",
                   currentRoute === item.id
-                    ? "bg-[var(--bg-active)] text-[var(--fg)] font-medium"
-                    : "text-[var(--fg-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--fg)]",
+                    ? "bg-(--bg-active) text-(--fg) font-medium"
+                    : "text-(--fg-muted) hover:bg-(--bg-hover) hover:text-(--fg)",
                 ].join(" ")}
               >
                 <Icon name={item.icon} />
@@ -98,7 +98,7 @@ export function Sidebar({
       )}
 
       {footer && (
-        <div className="mt-auto border-t border-[var(--border-faint)] p-3">
+        <div className="mt-auto border-t border-(--border-faint) p-3">
           {footer}
         </div>
       )}

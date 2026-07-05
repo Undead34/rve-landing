@@ -50,42 +50,42 @@ export function RuleTable({
   return (
     <>
       {bulkActions}
-      <div className="bg-[var(--bg-elev)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden">
-        <table className="w-full border-collapse text-[var(--fs-md)]">
+      <div className="bg-(--bg-elev) border border-(--border) rounded-(--radius-lg) overflow-hidden">
+        <table className="w-full border-collapse text-(--fs-md)">
           <thead>
-            <tr className="text-left font-medium text-[var(--fg-muted)] text-[var(--fs-sm)] bg-[var(--bg-inset)]">
-              <th className="w-8 pl-4 py-2 px-3 border-b border-[var(--border)] whitespace-nowrap">
+            <tr className="text-left font-medium text-(--fg-muted) text-(--fs-sm) bg-(--bg-inset)">
+              <th className="w-8 pl-4 py-2 px-3 border-b border-(--border) whitespace-nowrap">
                 <input
                   type="checkbox"
                   checked={allSelected}
                   onChange={onToggleAll}
                 />
               </th>
-              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap">
+              <th className="py-2 px-3 border-b border-(--border) whitespace-nowrap">
                 Name
               </th>
-              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap">
+              <th className="py-2 px-3 border-b border-(--border) whitespace-nowrap">
                 Mode
               </th>
-              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap">
+              <th className="py-2 px-3 border-b border-(--border) whitespace-nowrap">
                 Action
               </th>
-              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap">
+              <th className="py-2 px-3 border-b border-(--border) whitespace-nowrap">
                 Channels
               </th>
-              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap text-right tabular-nums">
+              <th className="py-2 px-3 border-b border-(--border) whitespace-nowrap text-right tabular-nums">
                 Score
               </th>
-              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap text-right tabular-nums">
+              <th className="py-2 px-3 border-b border-(--border) whitespace-nowrap text-right tabular-nums">
                 Rollout
               </th>
-              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap text-right tabular-nums">
+              <th className="py-2 px-3 border-b border-(--border) whitespace-nowrap text-right tabular-nums">
                 Hits (7d)
               </th>
-              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap">
+              <th className="py-2 px-3 border-b border-(--border) whitespace-nowrap">
                 Updated
               </th>
-              <th className="w-8 py-2 px-3 border-b border-[var(--border)]"></th>
+              <th className="w-8 py-2 px-3 border-b border-(--border)"></th>
             </tr>
           </thead>
           <tbody>
@@ -93,10 +93,10 @@ export function RuleTable({
               <tr
                 key={r.code}
                 onClick={() => onOpen(r.code)}
-                className="cursor-pointer hover:bg-[var(--bg-hover)]"
+                className="cursor-pointer hover:bg-(--bg-hover)"
               >
                 <td
-                  className="pl-4 py-[10px] px-3 border-b border-[var(--border-faint)]"
+                  className="pl-4 py-[10px] px-3 border-b border-(--border-faint)"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <input
@@ -105,25 +105,25 @@ export function RuleTable({
                     onChange={() => onToggle(r.code)}
                   />
                 </td>
-                <td className="py-[10px] px-3 border-b border-[var(--border-faint)]">
+                <td className="py-[10px] px-3 border-b border-(--border-faint)">
                   <div className="flex flex-col gap-[2px] min-w-0">
                     <span className="font-medium">{r.name}</span>
-                    <span className="font-mono text-[11px] text-[var(--fg-muted)]">
+                    <span className="font-mono text-[11px] text-(--fg-muted)">
                       {r.code}
-                      <span className="text-[var(--fg-subtle)]">
+                      <span className="text-(--fg-subtle)">
                         {" "}
                         @ {r.version}
                       </span>
                     </span>
                   </div>
                 </td>
-                <td className="py-[10px] px-3 border-b border-[var(--border-faint)]">
+                <td className="py-[10px] px-3 border-b border-(--border-faint)">
                   <ModeBadge mode={r.mode} />
                 </td>
-                <td className="py-[10px] px-3 border-b border-[var(--border-faint)]">
+                <td className="py-[10px] px-3 border-b border-(--border-faint)">
                   <ActionBadge action={r.action} />
                 </td>
-                <td className="py-[10px] px-3 border-b border-[var(--border-faint)]">
+                <td className="py-[10px] px-3 border-b border-(--border-faint)">
                   <div className="flex gap-1 flex-wrap">
                     {r.channels.slice(0, 3).map((c) => (
                       <Badge key={c} kind="neutral" mono>
@@ -131,28 +131,28 @@ export function RuleTable({
                       </Badge>
                     ))}
                     {r.channels.length > 3 && (
-                      <span className="text-[11px] text-[var(--fg-subtle)]">
+                      <span className="text-[11px] text-(--fg-subtle)">
                         +{r.channels.length - 3}
                       </span>
                     )}
                   </div>
                 </td>
-                <td className="py-[10px] px-3 border-b border-[var(--border-faint)] text-right tabular-nums font-mono">
+                <td className="py-[10px] px-3 border-b border-(--border-faint) text-right tabular-nums font-mono">
                   {r.score_impact}
                 </td>
-                <td className="py-[10px] px-3 border-b border-[var(--border-faint)] text-right tabular-nums font-mono">
+                <td className="py-[10px] px-3 border-b border-(--border-faint) text-right tabular-nums font-mono">
                   {r.rollout}%
                 </td>
-                <td className="py-[10px] px-3 border-b border-[var(--border-faint)] text-right tabular-nums font-mono">
+                <td className="py-[10px] px-3 border-b border-(--border-faint) text-right tabular-nums font-mono">
                   {r.hits_7d.toLocaleString()}
                 </td>
-                <td className="py-[10px] px-3 border-b border-[var(--border-faint)]">
-                  <span className="text-[12px] text-[var(--fg-muted)]">
+                <td className="py-[10px] px-3 border-b border-(--border-faint)">
+                  <span className="text-[12px] text-(--fg-muted)">
                     {timeAgo(r.updated_at)}
                   </span>
                 </td>
                 <td
-                  className="py-[10px] px-3 border-b border-[var(--border-faint)]"
+                  className="py-[10px] px-3 border-b border-(--border-faint)"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button type="button" className="icon-btn" title="More">

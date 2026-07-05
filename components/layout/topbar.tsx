@@ -11,25 +11,25 @@ interface TopbarProps {
 export function Topbar({ breadcrumbs, engineStatus }: TopbarProps) {
   return (
     <div
-      className="flex items-center px-6 gap-4 shrink-0 bg-[var(--bg-elev)] border-b border-[var(--border)]"
+      className="flex items-center px-6 gap-4 shrink-0 bg-(--bg-elev) border-b border-(--border)"
       style={{ height: "var(--topbar-h)" }}
     >
-      <div className="flex items-center gap-[6px] text-[var(--fs-md)] text-[var(--fg-muted)]">
+      <div className="flex items-center gap-[6px] text-(--fs-md) text-(--fg-muted)">
         {breadcrumbs.map((crumb, i) => (
           <span
             key={`${crumb.href ?? "current"}-${crumb.label}`}
             className="flex items-center gap-[6px]"
           >
-            {i > 0 && <span className="text-[var(--fg-subtle)]">/</span>}
+            {i > 0 && <span className="text-(--fg-subtle)">/</span>}
             {crumb.href ? (
-              <a href={crumb.href} className="text-[var(--fg)] no-underline">
+              <a href={crumb.href} className="text-(--fg) no-underline">
                 {crumb.label}
               </a>
             ) : (
               <span
                 className={
                   i === breadcrumbs.length - 1
-                    ? "text-[var(--fg)] font-medium"
+                    ? "text-(--fg) font-medium"
                     : ""
                 }
               >
@@ -45,9 +45,9 @@ export function Topbar({ breadcrumbs, engineStatus }: TopbarProps) {
       <div className="flex items-center gap-2">
         <CommandPaletteTriggers />
         {engineStatus && (
-          <div className="flex items-center gap-[6px] px-[10px] py-[4px] border border-[var(--border)] rounded-[999px] text-[var(--fs-sm)] text-[var(--fg-muted)] bg-[var(--bg-elev)]">
+          <div className="flex items-center gap-[6px] px-[10px] py-[4px] border border-(--border) rounded-[999px] text-(--fs-sm) text-(--fg-muted) bg-(--bg-elev)">
             <span
-              className={`w-[6px] h-[6px] rounded-full bg-[var(--status-active)] ${
+              className={`w-[6px] h-[6px] rounded-full bg-(--status-active) ${
                 engineStatus.ready
                   ? "animate-[pulse_2s_ease-in-out_infinite]"
                   : ""

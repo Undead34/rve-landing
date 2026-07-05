@@ -8,7 +8,7 @@ export function Card({ children, className = "", ...props }: CardProps) {
   return (
     <div
       className={[
-        "bg-[var(--bg-elev)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden",
+        "bg-(--bg-elev) border border-(--border) rounded-(--radius-lg) overflow-hidden",
         className,
       ].join(" ")}
       {...props}
@@ -27,7 +27,7 @@ export function CardHeader({ children, className = "" }: CardHeaderProps) {
   return (
     <div
       className={[
-        "px-4 py-3 border-b border-[var(--border-faint)] flex items-center justify-between gap-4",
+        "px-4 py-3 border-b border-(--border-faint) flex items-center justify-between gap-4",
         className,
       ].join(" ")}
     >
@@ -44,11 +44,11 @@ interface CardTitleProps {
 export function CardTitle({ children, subtitle }: CardTitleProps) {
   return (
     <div>
-      <h3 className="text-[var(--fs-lg)] font-semibold m-0 tracking-[-0.01em]">
+      <h3 className="text-(--fs-lg) font-semibold m-0 tracking-[-0.01em]">
         {children}
       </h3>
       {subtitle && (
-        <p className="text-[var(--fs-sm)] text-[var(--fg-muted)] mt-[2px] m-0">
+        <p className="text-(--fs-sm) text-(--fg-muted) mt-[2px] m-0">
           {subtitle}
         </p>
       )}

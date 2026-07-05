@@ -29,7 +29,7 @@ export function PolicySection({ policy, onChange }: PolicySectionProps) {
         <h2 className="text-lg font-semibold tracking-[-0.02em] m-0 mb-1">
           Policy
         </h2>
-        <p className="text-[13px] text-[var(--fg-muted)] m-0">
+        <p className="text-[13px] text-(--fg-muted) m-0">
           Activation mode, schedule window, and traffic rollout.
         </p>
       </div>
@@ -59,7 +59,7 @@ export function PolicySection({ policy, onChange }: PolicySectionProps) {
                     {m.value}
                   </span>
                 </div>
-                <div className="text-[11px] text-[var(--fg-muted)]">
+                <div className="text-[11px] text-(--fg-muted)">
                   {m.desc}
                 </div>
               </div>
@@ -94,7 +94,7 @@ export function PolicySection({ policy, onChange }: PolicySectionProps) {
                 onChange({ ...policy, rollout: +e.target.value })
               }
             />
-            <span className="text-[var(--fg-muted)]">%</span>
+            <span className="text-(--fg-muted)">%</span>
           </div>
         </div>
       </Field>
@@ -105,7 +105,7 @@ export function PolicySection({ policy, onChange }: PolicySectionProps) {
       >
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <div className="text-[11px] text-[var(--fg-muted)] mb-[2px]">
+            <div className="text-[11px] text-(--fg-muted) mb-[2px]">
               From
             </div>
             <Input
@@ -118,7 +118,7 @@ export function PolicySection({ policy, onChange }: PolicySectionProps) {
             />
           </div>
           <div>
-            <div className="text-[11px] text-[var(--fg-muted)] mb-[2px]">
+            <div className="text-[11px] text-(--fg-muted) mb-[2px]">
               To
             </div>
             <Input

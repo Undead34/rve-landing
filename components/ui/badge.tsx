@@ -5,15 +5,15 @@ export type Mode = "active" | "staged" | "suspended" | "deactivated"
 export type Action = "allow" | "review" | "block" | "tag_only"
 
 const kindStyles: Record<BadgeKind, string> = {
-  active: "text-[var(--status-active)] bg-[var(--status-active-bg)] border-[var(--status-active-border)]",
-  staged: "text-[var(--status-staged)] bg-[var(--status-staged-bg)] border-[var(--status-staged-border)]",
-  suspended: "text-[var(--status-suspended)] bg-[var(--status-suspended-bg)] border-[var(--status-suspended-border)]",
-  deactivated: "text-[var(--status-deactivated)] bg-[var(--status-deactivated-bg)] border-[var(--status-deactivated-border)]",
-  allow: "text-[var(--action-allow)] bg-[var(--status-active-bg)] border-[var(--status-active-border)]",
-  review: "text-[var(--action-review)] bg-[var(--status-staged-bg)] border-[var(--status-staged-border)]",
-  block: "text-[var(--action-block)] bg-[var(--status-suspended-bg)] border-[var(--status-suspended-border)]",
-  tag_only: "text-[var(--action-tag)] bg-[#f5f3ff] border-[#ddd6fe]",
-  neutral: "text-[var(--fg-muted)] bg-[var(--bg-subtle)] border-[var(--border)]",
+  active: "text-(--status-active) bg-(--status-active-bg) border-(--status-active-border)",
+  staged: "text-(--status-staged) bg-(--status-staged-bg) border-(--status-staged-border)",
+  suspended: "text-(--status-suspended) bg-(--status-suspended-bg) border-(--status-suspended-border)",
+  deactivated: "text-(--status-deactivated) bg-(--status-deactivated-bg) border-(--status-deactivated-border)",
+  allow: "text-(--action-allow) bg-(--status-active-bg) border-(--status-active-border)",
+  review: "text-(--action-review) bg-(--status-staged-bg) border-(--status-staged-border)",
+  block: "text-(--action-block) bg-(--status-suspended-bg) border-(--status-suspended-border)",
+  tag_only: "text-(--action-tag) bg-[#f5f3ff] border-[#ddd6fe]",
+  neutral: "text-(--fg-muted) bg-(--bg-subtle) border-(--border)",
 }
 
 interface BadgeProps {
@@ -29,7 +29,7 @@ export function Badge({ kind = "neutral", dot, mono, children, className = "" }:
     <span
       className={[
         "inline-flex items-center gap-[5px] px-[7px] py-[2px]",
-        "text-[var(--fs-xs)] font-medium rounded-[999px] border",
+        "text-(--fs-xs) font-medium rounded-[999px] border",
         "whitespace-nowrap",
         mono ? "font-mono text-[10px] px-[6px] py-[1px]" : "",
         kindStyles[kind],

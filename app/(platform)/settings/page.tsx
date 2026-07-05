@@ -104,7 +104,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-[var(--border)] mb-6 flex gap-4">
+      <div className="border-b border-(--border) mb-6 flex gap-4">
         {[
           { id: "runtime", label: "Runtime" },
           { id: "contract", label: "Integration contract" },
@@ -116,8 +116,8 @@ export default function SettingsPage() {
             onClick={() => setActiveTab(tab.id)}
             className={`pb-3 text-[14px] font-medium border-b-2 transition-all cursor-pointer relative ${
               activeTab === tab.id
-                ? "border-[var(--accent)] text-[var(--fg)] font-semibold"
-                : "border-transparent text-[var(--fg-muted)] hover:text-[var(--fg)]"
+                ? "border-(--accent) text-(--fg) font-semibold"
+                : "border-transparent text-(--fg-muted) hover:text-(--fg)"
             }`}
           >
             {tab.label}
@@ -159,11 +159,11 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardBody className="flex flex-col gap-4">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[13px] font-semibold text-[var(--fg)] flex items-center gap-1.5">
+                    <label className="text-[13px] font-semibold text-(--fg) flex items-center gap-1.5">
                       Score Aggregation
                     </label>
-                    <span className="text-[11px] text-[var(--fg-subtle)]">How hits combine into a final score.</span>
-                    <select className="px-[10px] py-[6px] text-[13px] rounded-[var(--radius-md)] border border-[var(--border-strong)] bg-[var(--bg-elev)] outline-none cursor-pointer w-full md:w-80">
+                    <span className="text-[11px] text-(--fg-subtle)">How hits combine into a final score.</span>
+                    <select className="px-[10px] py-[6px] text-[13px] rounded-(--radius-md) border border-(--border-strong) bg-(--bg-elev) outline-none cursor-pointer w-full md:w-80">
                       <option value="sum_capped">Sum (capped at 10)</option>
                       <option value="max">Maximum hit</option>
                       <option value="weighted">Weighted average</option>
@@ -172,14 +172,14 @@ export default function SettingsPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[13px] font-semibold text-[var(--fg)]">Review Threshold</label>
-                      <span className="text-[11px] text-[var(--fg-subtle)]">Score ≥ this routes to manual review.</span>
-                      <input type="number" defaultValue="3" className="px-[10px] py-[5px] text-[13px] font-mono rounded border border-[var(--border-strong)] bg-[var(--bg-elev)] outline-none w-full" />
+                      <label className="text-[13px] font-semibold text-(--fg)">Review Threshold</label>
+                      <span className="text-[11px] text-(--fg-subtle)">Score ≥ this routes to manual review.</span>
+                      <input type="number" defaultValue="3" className="px-[10px] py-[5px] text-[13px] font-mono rounded border border-(--border-strong) bg-(--bg-elev) outline-none w-full" />
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[13px] font-semibold text-[var(--fg)]">Block Threshold</label>
-                      <span className="text-[11px] text-[var(--fg-subtle)]">Score ≥ this blocks the event transaction.</span>
-                      <input type="number" defaultValue="7" className="px-[10px] py-[5px] text-[13px] font-mono rounded border border-[var(--border-strong)] bg-[var(--bg-elev)] outline-none w-full" />
+                      <label className="text-[13px] font-semibold text-(--fg)">Block Threshold</label>
+                      <span className="text-[11px] text-(--fg-subtle)">Score ≥ this blocks the event transaction.</span>
+                      <input type="number" defaultValue="7" className="px-[10px] py-[5px] text-[13px] font-mono rounded border border-(--border-strong) bg-(--bg-elev) outline-none w-full" />
                     </div>
                   </div>
                 </CardBody>
@@ -193,8 +193,8 @@ export default function SettingsPage() {
                   <ToggleSetting label="Alert on rule deactivation" defaultChecked />
                   <ToggleSetting label="Alert on engine reload failure" defaultChecked />
                   <div className="flex flex-col gap-1.5 mt-2">
-                    <label className="text-[13px] font-semibold text-[var(--fg)]">Webhook Endpoint URL</label>
-                    <input type="text" placeholder="https://hooks.example.com/rve-updates" className="px-[10px] py-[5px] text-[13px] font-mono rounded border border-[var(--border-strong)] bg-[var(--bg-elev)] outline-none w-full" />
+                    <label className="text-[13px] font-semibold text-(--fg)">Webhook Endpoint URL</label>
+                    <input type="text" placeholder="https://hooks.example.com/rve-updates" className="px-[10px] py-[5px] text-[13px] font-mono rounded border border-(--border-strong) bg-(--bg-elev) outline-none w-full" />
                   </div>
                 </CardBody>
               </Card>
@@ -207,23 +207,23 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardBody className="flex flex-col gap-4">
                   <div className="flex flex-col gap-0.5">
-                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em]">Engine version</div>
+                    <div className="text-[11px] text-(--fg-subtle) uppercase tracking-[0.04em]">Engine version</div>
                     <div className="font-mono text-[14px] font-medium">{engineInfo.version}</div>
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em]">Repository Rules</div>
+                    <div className="text-[11px] text-(--fg-subtle) uppercase tracking-[0.04em]">Repository Rules</div>
                     <div className="font-mono text-[14px]">{engineInfo.repositoryRules} total rules</div>
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em]">Loaded Rules</div>
+                    <div className="text-[11px] text-(--fg-subtle) uppercase tracking-[0.04em]">Loaded Rules</div>
                     <div className="font-mono text-[14px]">{engineInfo.loadedRules} active/staged rules</div>
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em]">Backend Mode</div>
+                    <div className="text-[11px] text-(--fg-subtle) uppercase tracking-[0.04em]">Backend Mode</div>
                     <div className="font-mono text-[13px] text-emerald-400 capitalize">{engineInfo.mode}</div>
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em]">Uptime</div>
+                    <div className="text-[11px] text-(--fg-subtle) uppercase tracking-[0.04em]">Uptime</div>
                     <div className="font-mono text-[13px]">Running (localhost:3439)</div>
                   </div>
                 </CardBody>
@@ -234,9 +234,9 @@ export default function SettingsPage() {
 
         {activeTab === "contract" && (
           <div className="flex flex-col gap-6">
-            <div className="bg-[var(--bg-inset)] border border-[var(--border)] rounded-lg p-4 flex items-center gap-3">
-              <Icon name="info" size={16} className="text-[var(--accent)]" />
-              <div className="text-[12px] text-[var(--fg-muted)]">
+            <div className="bg-(--bg-inset) border border-(--border) rounded-lg p-4 flex items-center gap-3">
+              <Icon name="info" size={16} className="text-(--accent)" />
+              <div className="text-[12px] text-(--fg-muted)">
                 Read-only overview of the event schema and constraints validated by the engine. To register new variables or custom assets, extend the backend contract.
               </div>
             </div>
@@ -306,8 +306,8 @@ export default function SettingsPage() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardBody className="p-0 border-t border-[var(--border-faint)]">
-                <pre className="m-0 p-5 bg-[var(--bg-inset)] font-mono text-[12px] leading-relaxed text-[var(--fg)] overflow-x-auto">
+              <CardBody className="p-0 border-t border-(--border-faint)">
+                <pre className="m-0 p-5 bg-(--bg-inset) font-mono text-[12px] leading-relaxed text-(--fg) overflow-x-auto">
 {`interface Event {
   event_id?: string;
   event: {
@@ -343,15 +343,15 @@ export default function SettingsPage() {
               <div className="flex justify-between items-center w-full">
                 <div>
                   <CardTitle>Team members</CardTitle>
-                  <span className="text-[12px] text-[var(--fg-muted)]">SSO authentication managed via Active Directory</span>
+                  <span className="text-[12px] text-(--fg-muted)">SSO authentication managed via Active Directory</span>
                 </div>
                 <Button icon="plus">Invite member</Button>
               </div>
             </CardHeader>
-            <CardBody className="p-0 border-t border-[var(--border-faint)]">
+            <CardBody className="p-0 border-t border-(--border-faint)">
               <table className="w-full text-left border-collapse text-[13px]">
                 <thead>
-                  <tr className="bg-[var(--bg-inset)] border-b border-[var(--border)] text-[var(--fg-muted)] text-[12px] font-medium">
+                  <tr className="bg-(--bg-inset) border-b border-(--border) text-(--fg-muted) text-[12px] font-medium">
                     <th className="p-3 pl-4">Member</th>
                     <th className="p-3">Role</th>
                     <th className="p-3">Last Active</th>
@@ -364,22 +364,22 @@ export default function SettingsPage() {
                     { name: "Ren Tanaka", handle: "r.tanaka", role: "Safety Manager", active: "2h ago" },
                     { name: "Nora Silva", handle: "n.silva", role: "Fraud Analyst", active: "1d ago" },
                   ].map((m) => (
-                    <tr key={m.handle} className="border-b border-[var(--border-faint)] hover:bg-[var(--bg-hover)]">
+                    <tr key={m.handle} className="border-b border-(--border-faint) hover:bg-(--bg-hover)">
                       <td className="p-3 pl-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-[var(--bg-active)] grid place-items-center font-semibold text-[11px] text-[var(--fg-muted)]">
+                          <div className="w-8 h-8 rounded-full bg-(--bg-active) grid place-items-center font-semibold text-[11px] text-(--fg-muted)">
                             {m.name.split(" ").map(w => w[0]).join("")}
                           </div>
                           <div>
                             <div className="font-semibold">{m.name}</div>
-                            <div className="text-[11px] text-[var(--fg-subtle)] font-mono">{m.handle}</div>
+                            <div className="text-[11px] text-(--fg-subtle) font-mono">{m.handle}</div>
                           </div>
                         </div>
                       </td>
                       <td className="p-3">
                         <Badge kind="neutral">{m.role}</Badge>
                       </td>
-                      <td className="p-3 text-[var(--fg-subtle)]">{m.active}</td>
+                      <td className="p-3 text-(--fg-subtle)">{m.active}</td>
                       <td className="p-3 text-right">
                         <button type="button" className="icon-btn">⋯</button>
                       </td>
@@ -401,14 +401,14 @@ function ToggleSetting({ label, hint, defaultChecked = false }: { label: string;
   return (
     <div className="flex items-start justify-between gap-4">
       <div>
-        <div className="text-[13px] font-semibold text-[var(--fg)]">{label}</div>
-        {hint && <div className="text-[11px] text-[var(--fg-subtle)] mt-0.5">{hint}</div>}
+        <div className="text-[13px] font-semibold text-(--fg)">{label}</div>
+        {hint && <div className="text-[11px] text-(--fg-subtle) mt-0.5">{hint}</div>}
       </div>
       <button
         type="button"
         onClick={() => setChecked(!checked)}
         className={`w-[34px] h-[20px] rounded-full relative cursor-pointer border-none transition-colors shrink-0 ${
-          checked ? "bg-[var(--accent)]" : "bg-[var(--bg-inset)] border border-[var(--border)]"
+          checked ? "bg-(--accent)" : "bg-(--bg-inset) border border-(--border)"
         }`}
       >
         <div

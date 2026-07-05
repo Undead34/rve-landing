@@ -53,7 +53,7 @@ export function ConsequenceSection({
         <h2 className="text-lg font-semibold tracking-[-0.02em] m-0 mb-1">
           Consequence
         </h2>
-        <p className="text-[13px] text-[var(--fg-muted)] m-0">
+        <p className="text-[13px] text-(--fg-muted) m-0">
           What the engine does when this rule&apos;s conditions match.
         </p>
       </div>
@@ -81,7 +81,7 @@ export function ConsequenceSection({
                   />
                   <span className="font-medium text-[13px]">{a.label}</span>
                 </div>
-                <div className="text-[11px] text-[var(--fg-muted)]">
+                <div className="text-[11px] text-(--fg-muted)">
                   {a.desc}
                 </div>
               </div>
@@ -112,7 +112,7 @@ export function ConsequenceSection({
               {consequence.score_impact}
             </span>
           </div>
-          <div className="flex justify-between text-[10px] text-[var(--fg-subtle)] mt-[2px]">
+          <div className="flex justify-between text-[10px] text-(--fg-subtle) mt-[2px]">
             <span>1 - low</span>
             <span>5 - medium</span>
             <span>10 - critical</span>
@@ -163,7 +163,7 @@ export function ConsequenceSection({
               onChange({ ...consequence, cooldown_seconds: +e.target.value })
             }
           />
-          <span className="text-[12px] text-[var(--fg-muted)]">
+          <span className="text-[12px] text-(--fg-muted)">
             seconds ({Math.floor(consequence.cooldown_seconds / 60)}m)
           </span>
         </div>
@@ -182,13 +182,13 @@ function TagInput({
   const [draft, setDraft] = useState("");
 
   return (
-    <div className="flex flex-wrap gap-[6px] p-[6px] border border-[var(--border-strong)] rounded-[var(--radius-md)] bg-[var(--bg-elev)] min-h-[32px]">
+    <div className="flex flex-wrap gap-[6px] p-[6px] border border-(--border-strong) rounded-(--radius-md) bg-(--bg-elev) min-h-[32px]">
       {tags.map((t) => (
         <span key={t} className="badge neutral mono !pr-1">
           {t}
           <button
             type="button"
-            className="inline-grid place-items-center w-[14px] h-[14px] rounded-[var(--radius-sm)] cursor-pointer text-[var(--fg-muted)] bg-transparent border-none hover:bg-[var(--bg-hover)]"
+            className="inline-grid place-items-center w-[14px] h-[14px] rounded-(--radius-sm) cursor-pointer text-(--fg-muted) bg-transparent border-none hover:bg-(--bg-hover)"
             onClick={() => onChange(tags.filter((x) => x !== t))}
           >
             <Icon name="x" size={10} />

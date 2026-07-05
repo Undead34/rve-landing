@@ -1253,7 +1253,7 @@ export function ConditionsTreeView({ tree }: { tree: Condition }) {
       return (
         <div className="flex gap-[6px] items-center px-2 py-1 font-mono text-[12px]">
           <span style={{ color: "var(--accent)" }}>{node.field || "—"}</span>
-          <span className="text-[var(--fg-subtle)]">{node.op}</span>
+          <span className="text-(--fg-subtle)">{node.op}</span>
           <span>{String(node.value)}</span>
         </div>
       );
@@ -1283,7 +1283,7 @@ export function ConditionsTreeView({ tree }: { tree: Condition }) {
   };
 
   return (
-    <div className="bg-[var(--bg-inset)] p-4 rounded-lg border border-[var(--border)]">
+    <div className="bg-(--bg-inset) p-4 rounded-lg border border-(--border)">
       {render(tree, 0)}
     </div>
   );
@@ -1305,7 +1305,7 @@ export function ConditionsCodeView({ tree }: { tree: Condition }) {
   }, [tree, evaluationCondition]);
 
   return (
-    <div className="bg-[var(--bg-inset)] p-4 rounded-lg border border-[var(--border)] font-mono text-[12px] leading-relaxed whitespace-pre overflow-x-auto">
+    <div className="bg-(--bg-inset) p-4 rounded-lg border border-(--border) font-mono text-[12px] leading-relaxed whitespace-pre overflow-x-auto">
       {jsonlogic}
     </div>
   );

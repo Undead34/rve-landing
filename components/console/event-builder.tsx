@@ -34,12 +34,12 @@ export function EventBuilder({
 
   return (
     <div className="flex flex-col overflow-hidden">
-      <div className="flex items-center justify-between gap-4 px-6 py-[14px] border-b border-[var(--border)] bg-[var(--bg-elev)]">
+      <div className="flex items-center justify-between gap-4 px-6 py-[14px] border-b border-(--border) bg-(--bg-elev)">
         <div>
           <h1 className="text-lg font-semibold tracking-[-0.01em] m-0">
             Decision Console
           </h1>
-          <p className="text-[12px] text-[var(--fg-muted)] m-0 mt-[2px]">
+          <p className="text-[12px] text-(--fg-muted) m-0 mt-[2px]">
             Simulate events against the current rule set. Engine version{" "}
             <span className="font-mono">v3.4.1</span>
           </p>
@@ -63,8 +63,8 @@ export function EventBuilder({
         className="flex-1 overflow-hidden grid"
         style={{ gridTemplateColumns: "180px 1fr" }}
       >
-        <div className="border-r border-[var(--border)] p-3 bg-[var(--bg-elev)] overflow-y-auto">
-          <div className="text-[var(--fs-xs)] text-[var(--fg-subtle)] uppercase tracking-[0.06em] px-1 pb-2 font-medium">
+        <div className="border-r border-(--border) p-3 bg-(--bg-elev) overflow-y-auto">
+          <div className="text-(--fs-xs) text-(--fg-subtle) uppercase tracking-[0.06em] px-1 pb-2 font-medium">
             Event sections
           </div>
           <div className="flex flex-col gap-[2px]">
@@ -73,31 +73,31 @@ export function EventBuilder({
                 key={s.id}
                 onClick={() => setActiveSection(s.id)}
                 className={[
-                  "flex items-center gap-[10px] px-2 py-[6px] rounded-[var(--radius-sm)] cursor-pointer select-none text-[var(--fs-md)]",
+                  "flex items-center gap-[10px] px-2 py-[6px] rounded-(--radius-sm) cursor-pointer select-none text-(--fs-md)",
                   activeSection === s.id
-                    ? "bg-[var(--bg-active)] text-[var(--fg)] font-medium"
-                    : "text-[var(--fg-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--fg)]",
+                    ? "bg-(--bg-active) text-(--fg) font-medium"
+                    : "text-(--fg-muted) hover:bg-(--bg-hover) hover:text-(--fg)",
                 ].join(" ")}
               >
                 <span>{s.label}</span>
-                <span className="ml-auto text-[10px] text-[var(--fg-subtle)] font-mono">
+                <span className="ml-auto text-[10px] text-(--fg-subtle) font-mono">
                   {s.count}
                 </span>
               </div>
             ))}
           </div>
-          <div className="h-[1px] bg-[var(--border-faint)] my-3" />
-          <div className="text-[var(--fs-xs)] text-[var(--fg-subtle)] uppercase tracking-[0.06em] px-1 pb-2 font-medium">
+          <div className="h-[1px] bg-(--border-faint) my-3" />
+          <div className="text-(--fs-xs) text-(--fg-subtle) uppercase tracking-[0.06em] px-1 pb-2 font-medium">
             Recent simulations
           </div>
           <div className="flex flex-col gap-1">
             {recentSimulations.map((s) => (
               <div
                 key={s.id}
-                className="p-[6px_8px] border border-[var(--border-faint)] rounded cursor-pointer bg-[var(--bg-elev)]"
+                className="p-[6px_8px] border border-(--border-faint) rounded cursor-pointer bg-(--bg-elev)"
               >
                 <div className="flex justify-between items-center gap-1">
-                  <span className="font-mono text-[10px] text-[var(--fg-subtle)]">
+                  <span className="font-mono text-[10px] text-(--fg-subtle)">
                     {s.id}
                   </span>
                   <Badge
@@ -109,10 +109,10 @@ export function EventBuilder({
                     {s.outcome}
                   </Badge>
                 </div>
-                <div className="text-[11px] mt-1 text-[var(--fg-muted)] leading-relaxed truncate">
+                <div className="text-[11px] mt-1 text-(--fg-muted) leading-relaxed truncate">
                   {s.label}
                 </div>
-                <div className="text-[10px] text-[var(--fg-subtle)] mt-[2px]">
+                <div className="text-[10px] text-(--fg-subtle) mt-[2px]">
                   {s.when} · score {s.score}
                 </div>
               </div>
@@ -313,18 +313,18 @@ function EventSectionForm({ section }: { section: string }) {
     <div className="flex flex-col gap-4" style={{ maxWidth: 720 }}>
       <div>
         <h2 className="text-base font-semibold m-0 mb-1">{s.title}</h2>
-        <p className="text-[12px] text-[var(--fg-muted)] m-0">{s.subtitle}</p>
+        <p className="text-[12px] text-(--fg-muted) m-0">{s.subtitle}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         {s.fields.map((f: FormField) => (
           <div key={f.label} className="flex flex-col gap-1">
-            <label className="font-mono text-[11px] text-[var(--fg)]">
+            <label className="font-mono text-[11px] text-(--fg)">
               {f.label}
             </label>
             {f.type === "select" ? (
               <select
-                className="px-[8px] py-[5px] text-[12px] font-mono rounded border border-[var(--border-strong)] bg-[var(--bg-elev)] outline-none"
+                className="px-[8px] py-[5px] text-[12px] font-mono rounded border border-(--border-strong) bg-(--bg-elev) outline-none"
                 defaultValue={f.value}
               >
                 {f.options?.map((o: string) => (
@@ -335,24 +335,24 @@ function EventSectionForm({ section }: { section: string }) {
               </select>
             ) : f.type === "number" ? (
               <input
-                className="px-[8px] py-[5px] text-[12px] font-mono rounded border border-[var(--border-strong)] bg-[var(--bg-elev)] outline-none"
+                className="px-[8px] py-[5px] text-[12px] font-mono rounded border border-(--border-strong) bg-(--bg-elev) outline-none"
                 type="number"
                 defaultValue={f.value}
               />
             ) : f.type === "datetime" ? (
               <input
-                className="px-[8px] py-[5px] text-[12px] font-mono rounded border border-[var(--border-strong)] bg-[var(--bg-elev)] outline-none"
+                className="px-[8px] py-[5px] text-[12px] font-mono rounded border border-(--border-strong) bg-(--bg-elev) outline-none"
                 type="datetime-local"
                 defaultValue={f.value}
               />
             ) : (
               <input
-                className="px-[8px] py-[5px] text-[12px] rounded border border-[var(--border-strong)] bg-[var(--bg-elev)] outline-none"
+                className="px-[8px] py-[5px] text-[12px] rounded border border-(--border-strong) bg-(--bg-elev) outline-none"
                 defaultValue={f.value}
               />
             )}
             {f.hint && (
-              <div className="text-[10px] text-[var(--fg-subtle)]">
+              <div className="text-[10px] text-(--fg-subtle)">
                 {f.hint}
               </div>
             )}

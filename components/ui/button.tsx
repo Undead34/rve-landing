@@ -17,13 +17,13 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const kindStyles: Record<ButtonKind, string> = {
   primary:
-    "bg-[var(--fg)] text-[var(--bg-elev)] border-[var(--fg)] hover:opacity-88",
+    "bg-(--fg) text-(--bg-elev) border-(--fg) hover:opacity-88",
   accent:
-    "bg-[var(--accent)] text-white border-[var(--accent)] hover:bg-[var(--accent-hover)] hover:border-[var(--accent-hover)]",
+    "bg-(--accent) text-white border-(--accent) hover:bg-(--accent-hover) hover:border-(--accent-hover)",
   ghost:
-    "bg-transparent border-transparent hover:bg-[var(--bg-hover)]",
+    "bg-transparent border-transparent hover:bg-(--bg-hover)",
   danger:
-    "text-[var(--accent)] hover:bg-[var(--accent-soft)] hover:border-[var(--accent-border)]",
+    "text-(--accent) hover:bg-(--accent-soft) hover:border-(--accent-border)",
 }
 
 export function Button({
@@ -38,10 +38,10 @@ export function Button({
 }: ButtonProps) {
   const cls = [
     "inline-flex items-center gap-[6px] whitespace-nowrap cursor-pointer",
-    "text-[var(--fs-md)] font-medium rounded-[var(--radius-md)]",
+    "text-(--fs-md) font-medium rounded-(--radius-md)",
     "border transition-[background,border-color] duration-[80ms]",
-    size === "sm" ? "px-2 py-[3px] text-[var(--fs-sm)]" : "px-3 py-[6px]",
-    kind ? kindStyles[kind] : "bg-[var(--bg-elev)] text-[var(--fg)] border-[var(--border-strong)] hover:bg-[var(--bg-hover)]",
+    size === "sm" ? "px-2 py-[3px] text-(--fs-sm)" : "px-3 py-[6px]",
+    kind ? kindStyles[kind] : "bg-(--bg-elev) text-(--fg) border-(--border-strong) hover:bg-(--bg-hover)",
     props.disabled ? "opacity-40 cursor-not-allowed" : "",
     className,
   ]
@@ -76,8 +76,8 @@ export function IconButton({ icon, size, className = "", ...props }: IconButtonP
   return (
     <button
       className={[
-        "inline-grid place-items-center rounded-[var(--radius-sm)] cursor-pointer border-none",
-        "text-[var(--fg-muted)] bg-transparent hover:bg-[var(--bg-hover)] hover:text-[var(--fg)]",
+        "inline-grid place-items-center rounded-(--radius-sm) cursor-pointer border-none",
+        "text-(--fg-muted) bg-transparent hover:bg-(--bg-hover) hover:text-(--fg)",
         "w-[26px] h-[26px] transition-colors duration-[80ms]",
         className,
       ].join(" ")}
