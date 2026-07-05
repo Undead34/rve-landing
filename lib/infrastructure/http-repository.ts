@@ -64,10 +64,7 @@ export class HttpRuleRepository implements RuleRepository {
     this.baseUrl = resolvedBaseUrl.replace(/\/$/, "");
   }
 
-  private async request<T>(
-    path: string,
-    options?: RequestInit
-  ): Promise<T> {
+  private async request<T>(path: string, options?: RequestInit): Promise<T> {
     const res = await fetch(`${this.baseUrl}${path}`, {
       ...options,
       headers: {
@@ -95,7 +92,7 @@ export class HttpRuleRepository implements RuleRepository {
       limit: String(limit),
     });
     return this.request<RulesListResponse>(
-      `/api/v1/rules?${params.toString()}`
+      `/api/v1/rules?${params.toString()}`,
     );
   }
 
@@ -122,10 +119,7 @@ export class HttpRuleRepository implements RuleRepository {
     });
   }
 
-  async patch(
-    id: string,
-    rulePatch: RulePatchInput
-  ): Promise<FraudRule> {
+  async patch(id: string, rulePatch: RulePatchInput): Promise<FraudRule> {
     return this.request<FraudRule>(`/api/v1/rules/${id}`, {
       method: "PATCH",
       body: JSON.stringify(rulePatch),
@@ -138,9 +132,7 @@ export class HttpRuleRepository implements RuleRepository {
     });
   }
 
-  async decide(
-    request: RuleDecisionRequest
-  ): Promise<RuleDecisionResponse> {
+  async decide(request: RuleDecisionRequest): Promise<RuleDecisionResponse> {
     return this.request<RuleDecisionResponse>("/api/v1/decisions", {
       method: "POST",
       body: JSON.stringify(request),
@@ -157,9 +149,7 @@ export class HttpRuleRepository implements RuleRepository {
   }
 
   async getBuilderConfig(): Promise<BuilderConfigResponse> {
-    return this.request<BuilderConfigResponse>(
-      "/api/v1/ui/builder-config"
-    );
+    return this.request<BuilderConfigResponse>("/api/v1/ui/builder-config");
   }
 
   async getEngineStatus(): Promise<EngineStatusResponseDoc> {

@@ -11,5 +11,5 @@ export function SidebarFooter() {
         <div className="text-[10px] text-(--fg-subtle)">Fraud Analyst</div>
       </div>
     </div>
-  )
+  );
 }

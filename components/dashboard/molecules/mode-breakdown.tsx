@@ -1,4 +1,4 @@
-interface RuleCounts {
+export interface RuleCounts {
   active: number
   staged: number
   suspended: number

@@ -32,7 +32,8 @@ export function ScopeSection({ channels, onChange }: ScopeSectionProps) {
           Scope
         </h2>
         <p className="text-[13px] text-(--fg-muted) m-0">
-          Channels this rule will evaluate against. At least one channel is required.
+          Channels this rule will evaluate against. At least one channel is
+          required.
         </p>
       </div>
 

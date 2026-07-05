@@ -1,20 +1,20 @@
-import { Icon } from "../ui/icon"
-import { Input } from "../ui/input"
-import { Kbd } from "../ui/kbd"
-import { Segmented } from "../ui/tabs"
+import { Icon } from "../ui/icon";
+import { Input } from "../ui/input";
+import { Kbd } from "../ui/kbd";
+import { Segmented } from "../ui/tabs";
 
 interface RuleFiltersProps {
-  search: string
-  onSearchChange: (value: string) => void
-  modeFilter: string
-  onModeFilterChange: (value: string) => void
-  channelFilter: string
-  onChannelFilterChange: (value: string) => void
-  channels: string[]
-  total: number
-  filtered: number
-  view: "table" | "cards"
-  onViewChange: (value: "table" | "cards") => void
+  search: string;
+  onSearchChange: (value: string) => void;
+  modeFilter: string;
+  onModeFilterChange: (value: string) => void;
+  channelFilter: string;
+  onChannelFilterChange: (value: string) => void;
+  channels: string[];
+  total: number;
+  filtered: number;
+  view: "table" | "cards";
+  onViewChange: (value: "table" | "cards") => void;
 }
 
 export function RuleFilters({
@@ -33,7 +33,10 @@ export function RuleFilters({
   return (
     <div className="bg-[var(--bg-elev)] border border-[var(--border)] rounded-[var(--radius-lg)] overflow-hidden mb-4">
       <div className="p-3 flex items-center gap-2 flex-wrap">
-        <div className="relative flex-1 min-w-[240px]" style={{ flex: "1 1 320px" }}>
+        <div
+          className="relative flex-1 min-w-[240px]"
+          style={{ flex: "1 1 320px" }}
+        >
           <span className="absolute left-[10px] top-1/2 -translate-y-1/2 text-[var(--fg-subtle)]">
             <Icon name="search" size={12} />
           </span>
@@ -67,12 +70,16 @@ export function RuleFilters({
         >
           <option value="all">All channels</option>
           {channels.map((c) => (
-            <option key={c} value={c}>{c}</option>
+            <option key={c} value={c}>
+              {c}
+            </option>
           ))}
         </select>
 
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-[12px] text-[var(--fg-muted)]">{filtered} of {total}</span>
+          <span className="text-[12px] text-[var(--fg-muted)]">
+            {filtered} of {total}
+          </span>
           <Segmented
             value={view}
             onChange={(v) => onViewChange(v as "table" | "cards")}
@@ -84,5 +91,5 @@ export function RuleFilters({
         </div>
       </div>
     </div>
-  )
+  );
 }

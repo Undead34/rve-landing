@@ -13,8 +13,9 @@ import { useRuleCrud } from "@/lib/hooks/useRuleCrud";
 import { useFields } from "@/lib/hooks/useFields";
 
 const BuilderLayout = dynamic(
-  () => import("@/components/builder/builder-layout").then((m) => m.BuilderLayout),
-  { ssr: false }
+  () =>
+    import("@/components/builder/builder-layout").then((m) => m.BuilderLayout),
+  { ssr: false },
 );
 const BUILDER_SIDEBAR = (
   <Sidebar
@@ -25,12 +26,7 @@ const BUILDER_SIDEBAR = (
   />
 );
 const BUILDER_TOPBAR = (
-  <Topbar
-    breadcrumbs={[
-      { label: "Red Velvet" },
-      { label: "Rule builder" },
-    ]}
-  />
+  <Topbar breadcrumbs={[{ label: "Red Velvet" }, { label: "Rule builder" }]} />
 );
 
 export default function BuilderPage() {
@@ -96,7 +92,8 @@ export default function BuilderPage() {
                 style={{ fontSize: 11, padding: "2px 8px" }}
               >
                 <span className="dot" />
-                {draft.policy.mode.charAt(0).toUpperCase() + draft.policy.mode.slice(1)}
+                {draft.policy.mode.charAt(0).toUpperCase() +
+                  draft.policy.mode.slice(1)}
               </span>
               <span
                 className="badge neutral mono"
@@ -126,11 +123,43 @@ export default function BuilderPage() {
             </div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button type="button" className="btn sm" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", fontSize: 13, fontWeight: 500, color: "var(--fg)", background: "var(--bg-elev)", border: "1px solid var(--border-strong)", borderRadius: 6, cursor: "pointer" }}>
+            <button
+              type="button"
+              className="btn sm"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "6px 12px",
+                fontSize: 13,
+                fontWeight: 500,
+                color: "var(--fg)",
+                background: "var(--bg-elev)",
+                border: "1px solid var(--border-strong)",
+                borderRadius: 6,
+                cursor: "pointer",
+              }}
+            >
               <Icon name="play" size={14} />
               Simulate
             </button>
-            <button type="button" className="btn sm ghost" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", fontSize: 13, fontWeight: 500, color: "var(--fg)", background: "transparent", border: "none", borderRadius: 6, cursor: "pointer" }}>
+            <button
+              type="button"
+              className="btn sm ghost"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "6px 12px",
+                fontSize: 13,
+                fontWeight: 500,
+                color: "var(--fg)",
+                background: "transparent",
+                border: "none",
+                borderRadius: 6,
+                cursor: "pointer",
+              }}
+            >
               Discard
             </button>
             <button
@@ -139,9 +168,18 @@ export default function BuilderPage() {
               disabled={isCrudSaving}
               className="btn sm accent"
               style={{
-                display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", fontSize: 13, fontWeight: 500,
-                background: "var(--accent)", color: "white", border: "1px solid var(--accent)", borderRadius: 6,
-                cursor: isCrudSaving ? "not-allowed" : "pointer", opacity: isCrudSaving ? 0.4 : 1,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "6px 12px",
+                fontSize: 13,
+                fontWeight: 500,
+                background: "var(--accent)",
+                color: "white",
+                border: "1px solid var(--accent)",
+                borderRadius: 6,
+                cursor: isCrudSaving ? "not-allowed" : "pointer",
+                opacity: isCrudSaving ? 0.4 : 1,
               }}
             >
               <Icon name="check" size={14} />

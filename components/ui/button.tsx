@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes } from "react"
+import Link from "next/link"
 import { Icon } from "./icon"
 import type { IconName } from "./icon"
 
@@ -10,6 +11,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: ButtonSize
   icon?: IconName
   iconAfter?: IconName
+  /** Renders as a navigation link instead of a button — no client JS required. */
+  href?: string
 }
 
 const kindStyles: Record<ButtonKind, string> = {
@@ -28,6 +31,7 @@ export function Button({
   size,
   icon,
   iconAfter,
+  href,
   className = "",
   children,
   ...props
@@ -43,6 +47,16 @@ export function Button({
   ]
     .filter(Boolean)
     .join(" ")
+
+  if (href) {
+    return (
+      <Link href={href} className={cls}>
+        {icon && <Icon name={icon} />}
+        {children}
+        {iconAfter && <Icon name={iconAfter} />}
+      </Link>
+    )
+  }
 
   return (
     <button className={cls} {...props}>

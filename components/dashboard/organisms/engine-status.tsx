@@ -1,6 +1,4 @@
-"use client"
-
-interface EngineStatusData {
+export interface EngineStatusData {
   status: string
   rules_loaded: number
   rules_in_repo: number
@@ -11,7 +9,7 @@ interface EngineStatusData {
   p99_latency_ms: number
 }
 
-interface ContractData {
+export interface ContractData {
   version: string
   supported_assets: string[]
 }

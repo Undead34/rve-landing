@@ -1,41 +1,41 @@
-import type { ReactNode } from "react"
-import { ModeBadge, ActionBadge, Badge } from "../ui/badge"
+import type { ReactNode } from "react";
+import { ModeBadge, ActionBadge, Badge } from "../ui/badge";
 
 export interface RuleRowData {
-  code: string
-  name: string
-  version: string
-  mode: "active" | "staged" | "suspended" | "deactivated"
-  action: "allow" | "review" | "block" | "tag_only"
-  channels: string[]
-  score_impact: number
-  rollout: number
-  hits_7d: number
-  updated_at: string
-  tags?: string[]
-  description?: string
+  code: string;
+  name: string;
+  version: string;
+  mode: "active" | "staged" | "suspended" | "deactivated";
+  action: "allow" | "review" | "block" | "tag_only";
+  channels: string[];
+  score_impact: number;
+  rollout: number;
+  hits_7d: number;
+  updated_at: string;
+  tags?: string[];
+  description?: string;
 }
 
 interface RuleTableProps {
-  rules: RuleRowData[]
-  selected: Set<string>
-  onToggle: (code: string) => void
-  onToggleAll: () => void
-  allSelected: boolean
-  onOpen: (code: string) => void
-  bulkActions?: ReactNode
+  rules: RuleRowData[];
+  selected: Set<string>;
+  onToggle: (code: string) => void;
+  onToggleAll: () => void;
+  allSelected: boolean;
+  onOpen: (code: string) => void;
+  bulkActions?: ReactNode;
 }
 
 function timeAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime()
-  const m = Math.floor(diff / 60000)
-  if (m < 1) return "just now"
-  if (m < 60) return `${m}m ago`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${h}h ago`
-  const d = Math.floor(h / 24)
-  if (d < 30) return `${d}d ago`
-  return new Date(iso).toLocaleDateString()
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 30) return `${d}d ago`;
+  return new Date(iso).toLocaleDateString();
 }
 
 export function RuleTable({
@@ -61,14 +61,30 @@ export function RuleTable({
                   onChange={onToggleAll}
                 />
               </th>
-              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap">Name</th>
-              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap">Mode</th>
-              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap">Action</th>
-              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap">Channels</th>
-              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap text-right tabular-nums">Score</th>
-              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap text-right tabular-nums">Rollout</th>
-              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap text-right tabular-nums">Hits (7d)</th>
-              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap">Updated</th>
+              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap">
+                Name
+              </th>
+              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap">
+                Mode
+              </th>
+              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap">
+                Action
+              </th>
+              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap">
+                Channels
+              </th>
+              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap text-right tabular-nums">
+                Score
+              </th>
+              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap text-right tabular-nums">
+                Rollout
+              </th>
+              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap text-right tabular-nums">
+                Hits (7d)
+              </th>
+              <th className="py-2 px-3 border-b border-[var(--border)] whitespace-nowrap">
+                Updated
+              </th>
               <th className="w-8 py-2 px-3 border-b border-[var(--border)]"></th>
             </tr>
           </thead>
@@ -94,7 +110,10 @@ export function RuleTable({
                     <span className="font-medium">{r.name}</span>
                     <span className="font-mono text-[11px] text-[var(--fg-muted)]">
                       {r.code}
-                      <span className="text-[var(--fg-subtle)]"> @ {r.version}</span>
+                      <span className="text-[var(--fg-subtle)]">
+                        {" "}
+                        @ {r.version}
+                      </span>
                     </span>
                   </div>
                 </td>
@@ -107,18 +126,30 @@ export function RuleTable({
                 <td className="py-[10px] px-3 border-b border-[var(--border-faint)]">
                   <div className="flex gap-1 flex-wrap">
                     {r.channels.slice(0, 3).map((c) => (
-                      <Badge key={c} kind="neutral" mono>{c}</Badge>
+                      <Badge key={c} kind="neutral" mono>
+                        {c}
+                      </Badge>
                     ))}
                     {r.channels.length > 3 && (
-                      <span className="text-[11px] text-[var(--fg-subtle)]">+{r.channels.length - 3}</span>
+                      <span className="text-[11px] text-[var(--fg-subtle)]">
+                        +{r.channels.length - 3}
+                      </span>
                     )}
                   </div>
                 </td>
-                <td className="py-[10px] px-3 border-b border-[var(--border-faint)] text-right tabular-nums font-mono">{r.score_impact}</td>
-                <td className="py-[10px] px-3 border-b border-[var(--border-faint)] text-right tabular-nums font-mono">{r.rollout}%</td>
-                <td className="py-[10px] px-3 border-b border-[var(--border-faint)] text-right tabular-nums font-mono">{r.hits_7d.toLocaleString()}</td>
+                <td className="py-[10px] px-3 border-b border-[var(--border-faint)] text-right tabular-nums font-mono">
+                  {r.score_impact}
+                </td>
+                <td className="py-[10px] px-3 border-b border-[var(--border-faint)] text-right tabular-nums font-mono">
+                  {r.rollout}%
+                </td>
+                <td className="py-[10px] px-3 border-b border-[var(--border-faint)] text-right tabular-nums font-mono">
+                  {r.hits_7d.toLocaleString()}
+                </td>
                 <td className="py-[10px] px-3 border-b border-[var(--border-faint)]">
-                  <span className="text-[12px] text-[var(--fg-muted)]">{timeAgo(r.updated_at)}</span>
+                  <span className="text-[12px] text-[var(--fg-muted)]">
+                    {timeAgo(r.updated_at)}
+                  </span>
                 </td>
                 <td
                   className="py-[10px] px-3 border-b border-[var(--border-faint)]"
@@ -134,5 +165,5 @@ export function RuleTable({
         </table>
       </div>
     </>
-  )
+  );
 }

@@ -1,9 +1,7 @@
-"use client"
-
-import Link from "next/link"
-import type { ReactNode } from "react"
-import { Icon } from "../ui/icon"
-import type { NavItem } from "@/lib/navigation"
+import Link from "next/link";
+import type { ReactNode } from "react";
+import { Icon } from "../ui/icon";
+import type { NavItem } from "@/lib/navigation";
 
 const PATH_MAP: Record<string, string> = {
   dashboard: "/dashboard",
@@ -12,16 +10,21 @@ const PATH_MAP: Record<string, string> = {
   console: "/console",
   inspector: "/rules/inspector",
   settings: "/settings",
-}
+};
 
 interface SidebarProps {
-  currentRoute: string
-  navItems: NavItem[]
-  adminItems?: NavItem[]
-  footer?: ReactNode
+  currentRoute: string;
+  navItems: NavItem[];
+  adminItems?: NavItem[];
+  footer?: ReactNode;
 }
 
-export function Sidebar({ currentRoute, navItems, adminItems, footer }: SidebarProps) {
+export function Sidebar({
+  currentRoute,
+  navItems,
+  adminItems,
+  footer,
+}: SidebarProps) {
   return (
     <nav
       className="flex flex-col overflow-hidden bg-[var(--bg-elev)] border-r border-[var(--border)]"
@@ -100,5 +103,5 @@ export function Sidebar({ currentRoute, navItems, adminItems, footer }: SidebarP
         </div>
       )}
     </nav>
-  )
+  );
 }

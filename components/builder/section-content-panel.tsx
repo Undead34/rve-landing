@@ -35,19 +35,13 @@ export function SectionContentPanel() {
     case "scope":
       return (
         <div className="p-6 overflow-auto h-full">
-          <ScopeSection
-            channels={draft.channels}
-            onChange={setChannels}
-          />
+          <ScopeSection channels={draft.channels} onChange={setChannels} />
         </div>
       );
     case "policy":
       return (
         <div className="p-6 overflow-auto h-full">
-          <PolicySection
-            policy={draft.policy}
-            onChange={setPolicy}
-          />
+          <PolicySection policy={draft.policy} onChange={setPolicy} />
         </div>
       );
     case "conditions":

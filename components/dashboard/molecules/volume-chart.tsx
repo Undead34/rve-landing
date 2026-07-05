@@ -1,4 +1,4 @@
-interface DayVolume {
+export interface DayVolume {
   day: string
   allow: number
   review: number

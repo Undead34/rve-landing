@@ -7,14 +7,14 @@ export const engine = {
   uptime_days: 41,
   decisions_per_min: 1240,
   p99_latency_ms: 22,
-}
+};
 
 export const ruleCounts = {
   active: 28,
   staged: 6,
   suspended: 4,
   deactivated: 10,
-}
+};
 
 export const dailyVolume = [
   { day: "May 6", allow: 18204, review: 412, block: 88, tag_only: 244 },
@@ -31,17 +31,64 @@ export const dailyVolume = [
   { day: "May 17", allow: 16012, review: 332, block: 70, tag_only: 207 },
   { day: "May 18", allow: 20902, review: 461, block: 121, tag_only: 295 },
   { day: "May 19", allow: 14288, review: 318, block: 82, tag_only: 198 },
-]
+];
 
 export const recentActivity = [
-  { id: 1, kind: "updated", rule: "block_high_velocity_card_payments", version: "2.1.0", who: "r.tanaka", when: "2h ago", note: "Bumped threshold from 4 → 5" },
-  { id: 2, kind: "staged", rule: "staged_bot_score_threshold", version: "0.1.0", who: "n.silva", when: "3h ago", note: "Initial shadow-eval rollout 10%" },
-  { id: 3, kind: "created", rule: "block_proxy_signup_emerging_markets", version: "0.3.1", who: "n.silva", when: "1d ago", note: "First staged version" },
-  { id: 4, kind: "activated", rule: "review_geo_distance_anomaly", version: "1.2.0", who: "m.alvarez", when: "3d ago", note: "Promoted from staged" },
-  { id: 5, kind: "suspended", rule: "suspend_legacy_login_velocity", version: "2.5.0", who: "r.tanaka", when: "5d ago", note: "Replaced by v3" },
-]
+  {
+    id: 1,
+    kind: "updated",
+    rule: "block_high_velocity_card_payments",
+    version: "2.1.0",
+    who: "r.tanaka",
+    when: "2h ago",
+    note: "Bumped threshold from 4 → 5",
+  },
+  {
+    id: 2,
+    kind: "staged",
+    rule: "staged_bot_score_threshold",
+    version: "0.1.0",
+    who: "n.silva",
+    when: "3h ago",
+    note: "Initial shadow-eval rollout 10%",
+  },
+  {
+    id: 3,
+    kind: "created",
+    rule: "block_proxy_signup_emerging_markets",
+    version: "0.3.1",
+    who: "n.silva",
+    when: "1d ago",
+    note: "First staged version",
+  },
+  {
+    id: 4,
+    kind: "activated",
+    rule: "review_geo_distance_anomaly",
+    version: "1.2.0",
+    who: "m.alvarez",
+    when: "3d ago",
+    note: "Promoted from staged",
+  },
+  {
+    id: 5,
+    kind: "suspended",
+    rule: "suspend_legacy_login_velocity",
+    version: "2.5.0",
+    who: "r.tanaka",
+    when: "5d ago",
+    note: "Replaced by v3",
+  },
+];
 
 export const contract = {
   version: "v3",
-  supported_assets: ["transaction", "login", "signup", "withdrawal", "password_reset", "kyc_event"],
-}
+  supported_assets: [
+    "transaction",
+    "login",
+    "signup",
+    "withdrawal",
+    "password_reset",
+    "kyc_event",
+  ],
+};

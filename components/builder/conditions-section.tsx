@@ -3,10 +3,7 @@
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import type { ReactElement } from "react";
 import { useFields } from "@/lib/hooks/useFields";
-import {
-  createConditionId,
-  useRuleStore,
-} from "@/lib/stores/rule-store";
+import { createConditionId, useRuleStore } from "@/lib/stores/rule-store";
 import { useFieldsStore } from "@/lib/stores/fields-store";
 import type { FieldDef } from "@/lib/domain/types";
 import { OPERATOR_MAP_BY_TYPE } from "@/lib/domain/types";
@@ -1169,7 +1166,10 @@ export function ConditionsSummary({ tree }: { tree: Condition }) {
         <div className="text-[12px] text-(--fg-muted) space-y-1 bg-(--bg-inset) p-3 rounded-lg border border-(--border-strong)">
           {summaryEntries.length > 0 ? (
             summaryEntries.map((entry) => (
-              <div key={entry.key} className="font-mono text-[12px] text-(--fg) py-0.5">
+              <div
+                key={entry.key}
+                className="font-mono text-[12px] text-(--fg) py-0.5"
+              >
                 {entry.value}
               </div>
             ))

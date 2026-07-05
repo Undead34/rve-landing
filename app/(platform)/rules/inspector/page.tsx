@@ -24,10 +24,7 @@ const INSPECTOR_SIDEBAR = (
 );
 const INSPECTOR_TOPBAR = (
   <Topbar
-    breadcrumbs={[
-      { label: "Red Velvet" },
-      { label: "Rule Inspector" },
-    ]}
+    breadcrumbs={[{ label: "Red Velvet" }, { label: "Rule Inspector" }]}
   />
 );
 
@@ -119,7 +116,9 @@ function RuleInspectorContent() {
   }, [ruleId]);
 
   // Actions
-  const handleToggleState = async (newMode: "active" | "suspended" | "deactivated") => {
+  const handleToggleState = async (
+    newMode: "active" | "suspended" | "deactivated",
+  ) => {
     if (!rule) return;
     setLoading(true);
     try {
@@ -128,7 +127,10 @@ function RuleInspectorContent() {
       });
       await fetchRuleDetails();
     } catch (err) {
-      alert("Failed to update rule state: " + (err instanceof Error ? err.message : String(err)));
+      alert(
+        "Failed to update rule state: " +
+          (err instanceof Error ? err.message : String(err)),
+      );
     } finally {
       setLoading(false);
     }
@@ -136,13 +138,21 @@ function RuleInspectorContent() {
 
   const handleDelete = async () => {
     if (!rule) return;
-    if (!confirm("Are you sure you want to permanently delete this rule? This cannot be undone.")) return;
+    if (
+      !confirm(
+        "Are you sure you want to permanently delete this rule? This cannot be undone.",
+      )
+    )
+      return;
     setLoading(true);
     try {
       await repository.delete(rule.id);
       router.push("/rules");
     } catch (err) {
-      alert("Failed to delete rule: " + (err instanceof Error ? err.message : String(err)));
+      alert(
+        "Failed to delete rule: " +
+          (err instanceof Error ? err.message : String(err)),
+      );
       setLoading(false);
     }
   };
@@ -153,8 +163,12 @@ function RuleInspectorContent() {
     return allRules
       .filter((r) => r.id !== rule.id)
       .filter((r) => {
-        const sharedTags = (r.meta.tags || []).some((t) => (rule.meta.tags || []).includes(t));
-        const sharedChannels = (r.scope.channels || []).some((c) => (rule.scope.channels || []).includes(c));
+        const sharedTags = (r.meta.tags || []).some((t) =>
+          (rule.meta.tags || []).includes(t),
+        );
+        const sharedChannels = (r.scope.channels || []).some((c) =>
+          (rule.scope.channels || []).includes(c),
+        );
         return sharedTags || sharedChannels;
       })
       .slice(0, 4);
@@ -176,7 +190,9 @@ function RuleInspectorContent() {
   if (!ruleId) {
     return (
       <AppShell sidebar={INSPECTOR_SIDEBAR} topbar={INSPECTOR_TOPBAR}>
-        <div className="p-8 text-center text-[var(--fg-muted)]">No rule selected to inspect. Please open library first.</div>
+        <div className="p-8 text-center text-[var(--fg-muted)]">
+          No rule selected to inspect. Please open library first.
+        </div>
       </AppShell>
     );
   }
@@ -184,7 +200,9 @@ function RuleInspectorContent() {
   if (loading && !rule) {
     return (
       <AppShell sidebar={INSPECTOR_SIDEBAR} topbar={INSPECTOR_TOPBAR}>
-        <div className="p-8 text-center text-[var(--fg-muted)]">Loading rule details...</div>
+        <div className="p-8 text-center text-[var(--fg-muted)]">
+          Loading rule details...
+        </div>
       </AppShell>
     );
   }
@@ -192,7 +210,9 @@ function RuleInspectorContent() {
   if (!rule) {
     return (
       <AppShell sidebar={INSPECTOR_SIDEBAR} topbar={INSPECTOR_TOPBAR}>
-        <div className="p-8 text-center text-[var(--fg-muted)]">Rule not found.</div>
+        <div className="p-8 text-center text-[var(--fg-muted)]">
+          Rule not found.
+        </div>
       </AppShell>
     );
   }
@@ -218,7 +238,12 @@ function RuleInspectorContent() {
   return (
     <AppShell sidebar={INSPECTOR_SIDEBAR} topbar={inspectorDetailTopbar}>
       <div className="mb-4">
-        <Button kind="ghost" size="sm" icon="arrow-left" onClick={() => router.push("/rules")}>
+        <Button
+          kind="ghost"
+          size="sm"
+          icon="arrow-left"
+          onClick={() => router.push("/rules")}
+        >
           Back to library
         </Button>
       </div>
@@ -228,9 +253,15 @@ function RuleInspectorContent() {
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <ModeBadge mode={rule.state.mode} />
             <ActionBadge action={rule.enforcement.action} />
-            <Badge kind="neutral" mono>v{rule.meta.version}</Badge>
-            <Badge kind="neutral" mono>severity: {rule.enforcement.severity}</Badge>
-            <Badge kind="neutral" mono>score: {rule.enforcement.score_impact}</Badge>
+            <Badge kind="neutral" mono>
+              v{rule.meta.version}
+            </Badge>
+            <Badge kind="neutral" mono>
+              severity: {rule.enforcement.severity}
+            </Badge>
+            <Badge kind="neutral" mono>
+              score: {rule.enforcement.score_impact}
+            </Badge>
           </div>
           <h1 className="text-(--fs-xl) font-semibold tracking-[-0.02em] m-0">
             {rule.meta.name}
@@ -246,10 +277,16 @@ function RuleInspectorContent() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <Button icon="play" onClick={() => router.push(`/console?id=${rule.id}`)}>
+          <Button
+            icon="play"
+            onClick={() => router.push(`/console?id=${rule.id}`)}
+          >
             Simulate
           </Button>
-          <Button icon="edit" onClick={() => router.push(`/rules/builder?id=${rule.id}`)}>
+          <Button
+            icon="edit"
+            onClick={() => router.push(`/rules/builder?id=${rule.id}`)}
+          >
             Edit
           </Button>
           {rule.state.mode === "active" ? (
@@ -257,7 +294,11 @@ function RuleInspectorContent() {
               Suspend
             </Button>
           ) : (
-            <Button kind="accent" icon="check" onClick={() => handleToggleState("active")}>
+            <Button
+              kind="accent"
+              icon="check"
+              onClick={() => handleToggleState("active")}
+            >
               Activate
             </Button>
           )}
@@ -307,23 +348,39 @@ function RuleInspectorContent() {
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                   <div>
-                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">Current Mode</div>
-                    <div><ModeBadge mode={rule.state.mode} /></div>
+                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">
+                      Current Mode
+                    </div>
+                    <div>
+                      <ModeBadge mode={rule.state.mode} />
+                    </div>
                   </div>
                   <div>
-                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">Rollout Percent</div>
-                    <div className="font-mono font-medium">{rule.rollout.percent}%</div>
+                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">
+                      Rollout Percent
+                    </div>
+                    <div className="font-mono font-medium">
+                      {rule.rollout.percent}%
+                    </div>
                   </div>
                   <div>
-                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">Schedule</div>
+                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">
+                      Schedule
+                    </div>
                     <div className="text-[13px]">
                       {rule.schedule.active_from_ms ? (
                         <div className="font-mono">
-                          From {new Date(rule.schedule.active_from_ms).toLocaleDateString()}
-                          {rule.schedule.active_until_ms && ` to ${new Date(rule.schedule.active_until_ms).toLocaleDateString()}`}
+                          From{" "}
+                          {new Date(
+                            rule.schedule.active_from_ms,
+                          ).toLocaleDateString()}
+                          {rule.schedule.active_until_ms &&
+                            ` to ${new Date(rule.schedule.active_until_ms).toLocaleDateString()}`}
                         </div>
                       ) : (
-                        <span className="text-[var(--fg-muted)]">Always active</span>
+                        <span className="text-[var(--fg-muted)]">
+                          Always active
+                        </span>
                       )}
                     </div>
                   </div>
@@ -336,24 +393,37 @@ function RuleInspectorContent() {
                 </h3>
                 <div className="flex flex-col gap-4">
                   <div>
-                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1.5">Channels</div>
+                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1.5">
+                      Channels
+                    </div>
                     <div className="flex gap-1.5 flex-wrap">
                       {(rule.scope.channels || []).map((c) => (
-                        <Badge key={c} kind="neutral" mono>{c}</Badge>
+                        <Badge key={c} kind="neutral" mono>
+                          {c}
+                        </Badge>
                       ))}
-                      {(!rule.scope.channels || rule.scope.channels.length === 0) && (
-                        <span className="text-[12px] text-[var(--fg-subtle)]">All channels</span>
+                      {(!rule.scope.channels ||
+                        rule.scope.channels.length === 0) && (
+                        <span className="text-[12px] text-[var(--fg-subtle)]">
+                          All channels
+                        </span>
                       )}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1.5">Tags</div>
+                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1.5">
+                      Tags
+                    </div>
                     <div className="flex gap-1.5 flex-wrap">
                       {(rule.meta.tags || []).map((t) => (
-                        <Badge key={t} kind="neutral" mono>{t}</Badge>
+                        <Badge key={t} kind="neutral" mono>
+                          {t}
+                        </Badge>
                       ))}
                       {(!rule.meta.tags || rule.meta.tags.length === 0) && (
-                        <span className="text-[12px] text-[var(--fg-subtle)]">No tags defined</span>
+                        <span className="text-[12px] text-[var(--fg-subtle)]">
+                          No tags defined
+                        </span>
                       )}
                     </div>
                   </div>
@@ -368,21 +438,35 @@ function RuleInspectorContent() {
                 </h3>
                 <div className="flex flex-col gap-4">
                   <div>
-                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">Author</div>
-                    <div className="font-mono text-[13px]">{rule.meta.author}</div>
-                  </div>
-                  <div>
-                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">Created</div>
-                    <div className="text-[13px]">
-                      {new Date(rule.state.audit.created_at_ms).toLocaleString()}{" "}
-                      <span className="text-[var(--fg-subtle)]">by</span> {rule.state.audit.created_by || rule.meta.author}
+                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">
+                      Author
+                    </div>
+                    <div className="font-mono text-[13px]">
+                      {rule.meta.author}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">Last Updated</div>
+                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">
+                      Created
+                    </div>
                     <div className="text-[13px]">
-                      {new Date(rule.state.audit.updated_at_ms).toLocaleString()}{" "}
-                      <span className="text-[var(--fg-subtle)]">by</span> {rule.state.audit.updated_by || rule.meta.author}
+                      {new Date(
+                        rule.state.audit.created_at_ms,
+                      ).toLocaleString()}{" "}
+                      <span className="text-[var(--fg-subtle)]">by</span>{" "}
+                      {rule.state.audit.created_by || rule.meta.author}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">
+                      Last Updated
+                    </div>
+                    <div className="text-[13px]">
+                      {new Date(
+                        rule.state.audit.updated_at_ms,
+                      ).toLocaleString()}{" "}
+                      <span className="text-[var(--fg-subtle)]">by</span>{" "}
+                      {rule.state.audit.updated_by || rule.meta.author}
                     </div>
                   </div>
                 </div>
@@ -395,10 +479,21 @@ function RuleInspectorContent() {
           <div className="bg-[var(--bg-elev)] border border-[var(--border)] rounded-[var(--radius-lg)] p-6">
             <div className="flex justify-between items-center mb-4">
               <div>
-                <h2 className="text-[16px] font-semibold m-0">Evaluation logic</h2>
-                <p className="text-[var(--fg-muted)] text-[12px] m-0">JSONLogic representation compiled by the rule engine.</p>
+                <h2 className="text-[16px] font-semibold m-0">
+                  Evaluation logic
+                </h2>
+                <p className="text-[var(--fg-muted)] text-[12px] m-0">
+                  JSONLogic representation compiled by the rule engine.
+                </p>
               </div>
-              <Button size="sm" onClick={() => navigator.clipboard.writeText(JSON.stringify(rule.evaluation.logic, null, 2))}>
+              <Button
+                size="sm"
+                onClick={() =>
+                  navigator.clipboard.writeText(
+                    JSON.stringify(rule.evaluation.logic, null, 2),
+                  )
+                }
+              >
                 Copy JSON logic
               </Button>
             </div>
@@ -416,30 +511,56 @@ function RuleInspectorContent() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
-                <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">Action</div>
-                <div><ActionBadge action={rule.enforcement.action} /></div>
-              </div>
-              <div>
-                <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">Score Impact</div>
-                <div className="font-mono text-[16px] font-medium">{rule.enforcement.score_impact} / 10</div>
-              </div>
-              <div>
-                <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">Severity</div>
-                <div><Badge kind="neutral" mono>{rule.enforcement.severity}</Badge></div>
-              </div>
-              <div>
-                <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">Cooldown Window</div>
-                <div className="font-mono text-[13px]">
-                  {rule.enforcement.cooldown_ms ? `${rule.enforcement.cooldown_ms / 1000}s (${rule.enforcement.cooldown_ms / 60000}m)` : "No cooldown"}
+                <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">
+                  Action
+                </div>
+                <div>
+                  <ActionBadge action={rule.enforcement.action} />
                 </div>
               </div>
               <div>
-                <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">Enforcement Tags</div>
+                <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">
+                  Score Impact
+                </div>
+                <div className="font-mono text-[16px] font-medium">
+                  {rule.enforcement.score_impact} / 10
+                </div>
+              </div>
+              <div>
+                <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">
+                  Severity
+                </div>
+                <div>
+                  <Badge kind="neutral" mono>
+                    {rule.enforcement.severity}
+                  </Badge>
+                </div>
+              </div>
+              <div>
+                <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">
+                  Cooldown Window
+                </div>
+                <div className="font-mono text-[13px]">
+                  {rule.enforcement.cooldown_ms
+                    ? `${rule.enforcement.cooldown_ms / 1000}s (${rule.enforcement.cooldown_ms / 60000}m)`
+                    : "No cooldown"}
+                </div>
+              </div>
+              <div>
+                <div className="text-[11px] text-[var(--fg-subtle)] uppercase tracking-[0.04em] mb-1">
+                  Enforcement Tags
+                </div>
                 <div className="flex gap-1 flex-wrap mt-1">
                   {rule.enforcement.tags.map((t) => (
-                    <Badge key={t} kind="neutral" mono>{t}</Badge>
+                    <Badge key={t} kind="neutral" mono>
+                      {t}
+                    </Badge>
                   ))}
-                  {rule.enforcement.tags.length === 0 && <span className="text-[12px] text-[var(--fg-subtle)]">None</span>}
+                  {rule.enforcement.tags.length === 0 && (
+                    <span className="text-[12px] text-[var(--fg-subtle)]">
+                      None
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -455,10 +576,16 @@ function RuleInspectorContent() {
                   <div className="absolute left-[-24px] top-1.5 w-3.5 h-3.5 rounded-full bg-[var(--bg-elev)] border-2 border-[var(--fg)]" />
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-medium text-[13px]">{item.what}</span>
-                    <span className="font-mono text-[11px] text-[var(--fg-subtle)]">{item.by}</span>
-                    <span className="text-[11px] text-[var(--fg-subtle)] ml-auto">{item.ts}</span>
+                    <span className="font-mono text-[11px] text-[var(--fg-subtle)]">
+                      {item.by}
+                    </span>
+                    <span className="text-[11px] text-[var(--fg-subtle)] ml-auto">
+                      {item.ts}
+                    </span>
                   </div>
-                  <div className="text-[var(--fg-muted)] text-[12px]">{item.detail}</div>
+                  <div className="text-[var(--fg-muted)] text-[12px]">
+                    {item.detail}
+                  </div>
                 </div>
               ))}
             </div>
@@ -489,7 +616,9 @@ function RuleInspectorContent() {
               </div>
             ))}
             {relatedRules.length === 0 && (
-              <div className="col-span-2 text-center text-[var(--fg-muted)] p-8">No related rules found (sharing tags or channels).</div>
+              <div className="col-span-2 text-center text-[var(--fg-muted)] p-8">
+                No related rules found (sharing tags or channels).
+              </div>
             )}
           </div>
         )}
@@ -500,11 +629,15 @@ function RuleInspectorContent() {
 
 export default function RuleInspectorPage() {
   return (
-    <Suspense fallback={
-      <AppShell sidebar={INSPECTOR_SIDEBAR} topbar={INSPECTOR_TOPBAR}>
-        <div className="p-8 text-center text-[var(--fg-muted)]">Loading inspector...</div>
-      </AppShell>
-    }>
+    <Suspense
+      fallback={
+        <AppShell sidebar={INSPECTOR_SIDEBAR} topbar={INSPECTOR_TOPBAR}>
+          <div className="p-8 text-center text-[var(--fg-muted)]">
+            Loading inspector...
+          </div>
+        </AppShell>
+      }
+    >
       <RuleInspectorContent />
     </Suspense>
   );
@@ -532,12 +665,18 @@ function LogicVisualizer({ logic }: { logic: any }) {
     return (
       <div className="flex flex-col gap-2 pl-4 border-l border-[var(--border-strong)] my-1">
         <div className="flex items-center gap-2">
-          <span className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase ${
-            isAnd ? "bg-blue-900/40 text-blue-300" : "bg-purple-900/40 text-purple-300"
-          }`}>
+          <span
+            className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase ${
+              isAnd
+                ? "bg-blue-900/40 text-blue-300"
+                : "bg-purple-900/40 text-purple-300"
+            }`}
+          >
             {op}
           </span>
-          <span className="text-[var(--fg-subtle)] text-[11px] font-mono">({(args as unknown[]).length} conditions)</span>
+          <span className="text-[var(--fg-subtle)] text-[11px] font-mono">
+            ({(args as unknown[]).length} conditions)
+          </span>
         </div>
         <div className="flex flex-col gap-3">
           {logicArgs.map(({ item, key }) => (

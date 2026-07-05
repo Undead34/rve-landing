@@ -149,15 +149,29 @@ export default function DecisionConsolePage() {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState("json");
   const [jsonContent, setJsonContent] = useState(() =>
-    JSON.stringify(DEFAULT_PAYLOAD, null, 2)
+    JSON.stringify(DEFAULT_PAYLOAD, null, 2),
   );
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [evaluating, setEvaluating] = useState(false);
-  const [decisionResult, setDecisionResult] = useState<DecisionResult | null>(null);
+  const [decisionResult, setDecisionResult] = useState<DecisionResult | null>(
+    null,
+  );
   const [traceSteps, setTraceSteps] = useState<TraceStep[]>([]);
   const [recentSimulations, setRecentSimulations] = useState<RecentSim[]>([
-    { id: "sim_8af3", label: "card velocity x6 same BIN", outcome: "block", score: 8.8, when: "1h ago" },
-    { id: "sim_8a40", label: "normal card payment", outcome: "allow", score: 0.6, when: "3h ago" },
+    {
+      id: "sim_8af3",
+      label: "card velocity x6 same BIN",
+      outcome: "block",
+      score: 8.8,
+      when: "1h ago",
+    },
+    {
+      id: "sim_8a40",
+      label: "normal card payment",
+      outcome: "allow",
+      score: 0.6,
+      when: "3h ago",
+    },
   ]);
   const [engineReady, setEngineReady] = useState(true);
   const [rulesLoadedCount, setRulesLoadedCount] = useState(0);
@@ -198,7 +212,8 @@ export default function DecisionConsolePage() {
       // Ensure unique event ID if none exists
       if (!payload.header) payload.header = {};
       if (!payload.header.event_id) {
-        payload.header.event_id = "evt_" + Math.random().toString(36).substr(2, 9);
+        payload.header.event_id =
+          "evt_" + Math.random().toString(36).substr(2, 9);
       }
       payload.header.timestamp = new Date().toISOString();
 
@@ -235,9 +250,17 @@ export default function DecisionConsolePage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const steps = (res.trace?.steps || []).map((step: any, idx: number) => ({
         step: idx + 1,
-        phase: step.task_id === "emit_hit" ? "evaluate" : step.task_id === "reload" ? "preprocess" : "enrich",
+        phase:
+          step.task_id === "emit_hit"
+            ? "evaluate"
+            : step.task_id === "reload"
+              ? "preprocess"
+              : "enrich",
         action: step.rule_id || step.task_id || "evaluate",
-        detail: step.result === "executed" ? `HIT - executed workflow ${step.workflow_id}` : `Workflow: ${step.result}`,
+        detail:
+          step.result === "executed"
+            ? `HIT - executed workflow ${step.workflow_id}`
+            : `Workflow: ${step.result}`,
         duration_us: Math.floor(Math.random() * 200) + 50,
         hit: step.task_id === "emit_hit" && step.result === "executed",
       }));
@@ -253,7 +276,10 @@ export default function DecisionConsolePage() {
       };
       setRecentSimulations((prev) => [newSim, ...prev.slice(0, 4)]);
     } catch (err) {
-      alert("Evaluation failed: " + (err instanceof Error ? err.message : String(err)));
+      alert(
+        "Evaluation failed: " +
+          (err instanceof Error ? err.message : String(err)),
+      );
     } finally {
       setEvaluating(false);
     }
@@ -287,31 +313,47 @@ export default function DecisionConsolePage() {
 
   return (
     <AppShell noPad sidebar={CONSOLE_SIDEBAR} topbar={consoleTopbar}>
-      <div className="flex-1 overflow-hidden grid" style={{ gridTemplateColumns: "1fr 380px" }}>
+      <div
+        className="flex-1 overflow-hidden grid"
+        style={{ gridTemplateColumns: "1fr 380px" }}
+      >
         {/* Left column: Event editor */}
         <div className="flex flex-col overflow-hidden">
           <div className="flex items-center justify-between gap-4 px-6 py-[14px] border-b border-[var(--border)] bg-[var(--bg-elev)] shrink-0">
             <div>
-              <h1 className="text-lg font-semibold tracking-[-0.01em] m-0">Decision Console</h1>
+              <h1 className="text-lg font-semibold tracking-[-0.01em] m-0">
+                Decision Console
+              </h1>
               <p className="text-[12px] text-[var(--fg-muted)] m-0 mt-[2px]">
                 Simulate events against the current rule set. Engine version{" "}
                 <span className="font-mono">v3.4.1</span>
               </p>
             </div>
             <div className="flex gap-2">
-              <Button icon="upload" onClick={() => loadSimIntoConsole("card_velocity")}>
+              <Button
+                icon="upload"
+                onClick={() => loadSimIntoConsole("card_velocity")}
+              >
                 Template: High Velocity Card
               </Button>
               <Button icon="copy" onClick={() => loadSimIntoConsole("normal")}>
                 Template: Low Value
               </Button>
-              <Button kind="accent" icon="play" onClick={handleEvaluate} disabled={evaluating || !!jsonError}>
+              <Button
+                kind="accent"
+                icon="play"
+                onClick={handleEvaluate}
+                disabled={evaluating || !!jsonError}
+              >
                 {evaluating ? "Evaluating..." : "Evaluate"}
               </Button>
             </div>
           </div>
 
-          <div className="flex-1 overflow-hidden grid" style={{ gridTemplateColumns: "180px 1fr" }}>
+          <div
+            className="flex-1 overflow-hidden grid"
+            style={{ gridTemplateColumns: "180px 1fr" }}
+          >
             {/* Sidebar section menu */}
             <div className="border-r border-[var(--border)] p-3 bg-[var(--bg-elev)] overflow-y-auto">
               <div className="text-[var(--fs-xs)] text-[var(--fg-subtle)] uppercase tracking-[0.06em] px-1 pb-2 font-medium">
@@ -343,7 +385,9 @@ export default function DecisionConsolePage() {
                     className="p-2 border border-[var(--border-faint)] rounded bg-[var(--bg-inset)] hover:bg-[var(--bg-hover)] cursor-pointer transition-colors"
                     onClick={() => {
                       // Parse standard outcomes
-                      const mockSim = structuredClone(DEFAULT_PAYLOAD) as ConsolePayload;
+                      const mockSim = structuredClone(
+                        DEFAULT_PAYLOAD,
+                      ) as ConsolePayload;
                       if (s.outcome === "block") {
                         mockSim.signals.velocity_1h = 7;
                         mockSim.payload.money.minor_units = 250000;
@@ -356,11 +400,19 @@ export default function DecisionConsolePage() {
                     }}
                   >
                     <div className="flex justify-between items-center gap-1 mb-1">
-                      <span className="font-mono text-[10px] text-[var(--fg-subtle)]">{s.id}</span>
-                      <Badge kind={s.outcome as BadgeKind} dot>{s.outcome}</Badge>
+                      <span className="font-mono text-[10px] text-[var(--fg-subtle)]">
+                        {s.id}
+                      </span>
+                      <Badge kind={s.outcome as BadgeKind} dot>
+                        {s.outcome}
+                      </Badge>
                     </div>
-                    <div className="text-[11px] text-[var(--fg-muted)] leading-tight truncate">{s.label}</div>
-                    <div className="text-[10px] text-[var(--fg-subtle)] mt-1">{s.when} · score {s.score}</div>
+                    <div className="text-[11px] text-[var(--fg-muted)] leading-tight truncate">
+                      {s.label}
+                    </div>
+                    <div className="text-[10px] text-[var(--fg-subtle)] mt-1">
+                      {s.when} · score {s.score}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -381,7 +433,9 @@ export default function DecisionConsolePage() {
                 </div>
                 <textarea
                   className={`flex-1 font-mono text-[13px] leading-relaxed p-4 rounded-lg bg-[var(--bg-inset)] border outline-none resize-none overflow-y-auto ${
-                    jsonError ? "border-red-500/50 focus:border-red-500" : "border-[var(--border)] focus:border-[var(--accent)]"
+                    jsonError
+                      ? "border-red-500/50 focus:border-red-500"
+                      : "border-[var(--border)] focus:border-[var(--accent)]"
                   }`}
                   value={jsonContent}
                   onChange={(e) => handleJsonChange(e.target.value)}

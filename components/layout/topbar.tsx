@@ -1,18 +1,14 @@
-"use client"
-
-import { IconButton } from "../ui/button"
-import { useCommandPaletteStore } from "@/lib/stores/command-palette-store"
+import { CommandPaletteTriggers } from "./command-palette-triggers";
 
 interface TopbarProps {
-  breadcrumbs: { label: string; href?: string }[]
+  breadcrumbs: { label: string; href?: string }[];
   engineStatus?: {
-    ready: boolean
-    rulesCount: number
-  }
+    ready: boolean;
+    rulesCount: number;
+  };
 }
 
 export function Topbar({ breadcrumbs, engineStatus }: TopbarProps) {
-  const toggleCommandPalette = useCommandPaletteStore((s) => s.toggle)
   return (
     <div
       className="flex items-center px-6 gap-4 shrink-0 bg-[var(--bg-elev)] border-b border-[var(--border)]"
@@ -24,15 +20,19 @@ export function Topbar({ breadcrumbs, engineStatus }: TopbarProps) {
             key={`${crumb.href ?? "current"}-${crumb.label}`}
             className="flex items-center gap-[6px]"
           >
-            {i > 0 && (
-              <span className="text-[var(--fg-subtle)]">/</span>
-            )}
+            {i > 0 && <span className="text-[var(--fg-subtle)]">/</span>}
             {crumb.href ? (
               <a href={crumb.href} className="text-[var(--fg)] no-underline">
                 {crumb.label}
               </a>
             ) : (
-              <span className={i === breadcrumbs.length - 1 ? "text-[var(--fg)] font-medium" : ""}>
+              <span
+                className={
+                  i === breadcrumbs.length - 1
+                    ? "text-[var(--fg)] font-medium"
+                    : ""
+                }
+              >
                 {crumb.label}
               </span>
             )}
@@ -43,22 +43,25 @@ export function Topbar({ breadcrumbs, engineStatus }: TopbarProps) {
       <div className="flex-1" />
 
       <div className="flex items-center gap-2">
-        <IconButton icon="search" title="Search" onClick={toggleCommandPalette} />
-        <IconButton icon="command" title="Command palette" onClick={toggleCommandPalette} />
+        <CommandPaletteTriggers />
         {engineStatus && (
           <div className="flex items-center gap-[6px] px-[10px] py-[4px] border border-[var(--border)] rounded-[999px] text-[var(--fs-sm)] text-[var(--fg-muted)] bg-[var(--bg-elev)]">
             <span
               className={`w-[6px] h-[6px] rounded-full bg-[var(--status-active)] ${
-                engineStatus.ready ? "animate-[pulse_2s_ease-in-out_infinite]" : ""
+                engineStatus.ready
+                  ? "animate-[pulse_2s_ease-in-out_infinite]"
+                  : ""
               }`}
               style={{
-                boxShadow: "0 0 0 2px color-mix(in srgb, var(--status-active) 20%, transparent)",
+                boxShadow:
+                  "0 0 0 2px color-mix(in srgb, var(--status-active) 20%, transparent)",
               }}
             />
-            Engine {engineStatus.ready ? "ready" : "loading"} · {engineStatus.rulesCount} rules
+            Engine {engineStatus.ready ? "ready" : "loading"} ·{" "}
+            {engineStatus.rulesCount} rules
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }

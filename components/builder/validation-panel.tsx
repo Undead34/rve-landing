@@ -59,9 +59,7 @@ export function ValidationPanel({
             </span>
           )}
         </div>
-        <div
-          style={{ fontSize: 11, color: "var(--fg-muted)" }}
-        >
+        <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>
           {errorCount} {errorCount === 1 ? "error" : "errors"} · {warnCount}{" "}
           {warnCount === 1 ? "warning" : "warnings"}
         </div>
@@ -85,10 +83,10 @@ export function ValidationPanel({
             >
               <Icon name="check" />
             </div>
-            <div style={{ fontSize: 13, fontWeight: 500 }}>
-              All checks pass
-            </div>
-            <div style={{ fontSize: 11, color: "var(--fg-muted)", marginTop: 2 }}>
+            <div style={{ fontSize: 13, fontWeight: 500 }}>All checks pass</div>
+            <div
+              style={{ fontSize: 11, color: "var(--fg-muted)", marginTop: 2 }}
+            >
               Rule is ready to save.
             </div>
           </div>

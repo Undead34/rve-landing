@@ -17,7 +17,10 @@ export function SectionsRailPanel() {
   const setActiveSection = useRuleStore((s) => s.setActiveSection);
 
   return (
-    <div className="flex flex-col h-full bg-(--bg-elev)" style={{ minHeight: 0 }}>
+    <div
+      className="flex flex-col h-full bg-(--bg-elev)"
+      style={{ minHeight: 0 }}
+    >
       <div className="px-3 pt-3 pb-2 text-[11px] font-medium text-(--fg-subtle) uppercase tracking-[0.06em]">
         Rule sections
       </div>
@@ -29,9 +32,10 @@ export function SectionsRailPanel() {
               key={s.id}
               onClick={() => {
                 setActiveSection(s.id);
-                const tabId = s.id === "conditions" ? "conditions-nested" : s.id;
+                const tabId =
+                  s.id === "conditions" ? "conditions-nested" : s.id;
                 window.dispatchEvent(
-                  new CustomEvent("rve-select-tab", { detail: { tabId } })
+                  new CustomEvent("rve-select-tab", { detail: { tabId } }),
                 );
               }}
               className="flex items-center gap-2.5 px-2 py-1.5 text-[13px] rounded cursor-pointer select-none"
@@ -41,7 +45,8 @@ export function SectionsRailPanel() {
                 fontWeight: isActive ? 500 : 400,
               }}
               onMouseEnter={(e) => {
-                if (!isActive) e.currentTarget.style.background = "var(--bg-hover)";
+                if (!isActive)
+                  e.currentTarget.style.background = "var(--bg-hover)";
               }}
               onMouseLeave={(e) => {
                 if (!isActive) e.currentTarget.style.background = "transparent";
@@ -50,7 +55,9 @@ export function SectionsRailPanel() {
               <Icon name={s.icon as never} size={14} />
               <span>{s.label}</span>
               {s.primary && (
-                <span className="ml-auto text-[10px] text-(--fg-subtle)">★</span>
+                <span className="ml-auto text-[10px] text-(--fg-subtle)">
+                  ★
+                </span>
               )}
             </div>
           );

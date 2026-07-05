@@ -1,9 +1,9 @@
-import type { RuleRowData } from "./rule-table"
-import { ModeBadge, ActionBadge, Badge } from "../ui/badge"
+import type { RuleRowData } from "./rule-table";
+import { ModeBadge, ActionBadge, Badge } from "../ui/badge";
 
 interface RuleCardProps {
-  rule: RuleRowData
-  onOpen: (code: string) => void
+  rule: RuleRowData;
+  onOpen: (code: string) => void;
 }
 
 export function RuleCard({ rule, onOpen }: RuleCardProps) {
@@ -15,15 +15,27 @@ export function RuleCard({ rule, onOpen }: RuleCardProps) {
       <div className="p-4 flex flex-col gap-3">
         <div className="flex justify-between items-start gap-2">
           <ModeBadge mode={rule.mode} />
-          <button type="button" className="icon-btn" onClick={(e) => e.stopPropagation()}>⋯</button>
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            ⋯
+          </button>
         </div>
         <div>
-          <div className="font-semibold text-[14px] tracking-[-0.01em] mb-[2px]">{rule.name}</div>
-          <div className="font-mono text-[11px] text-[var(--fg-muted)]">{rule.code} @ {rule.version}</div>
+          <div className="font-semibold text-[14px] tracking-[-0.01em] mb-[2px]">
+            {rule.name}
+          </div>
+          <div className="font-mono text-[11px] text-[var(--fg-muted)]">
+            {rule.code} @ {rule.version}
+          </div>
         </div>
         <div className="flex gap-1 flex-wrap">
           {rule.tags?.map((t: string) => (
-            <Badge key={t} kind="neutral" mono>{t}</Badge>
+            <Badge key={t} kind="neutral" mono>
+              {t}
+            </Badge>
           ))}
         </div>
         <div className="flex justify-between items-center pt-2 border-t border-[var(--border-faint)]">
@@ -36,5 +48,5 @@ export function RuleCard({ rule, onOpen }: RuleCardProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

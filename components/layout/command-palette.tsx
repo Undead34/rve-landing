@@ -90,7 +90,9 @@ export function CommandPalette() {
     window.dispatchEvent(new CustomEvent("rve-save-rule"));
   };
 
-  const handleSetPolicyMode = (mode: "active" | "staged" | "suspended" | "deactivated") => {
+  const handleSetPolicyMode = (
+    mode: "active" | "staged" | "suspended" | "deactivated",
+  ) => {
     setIsOpen(false);
     setPolicy({ mode });
   };
@@ -125,11 +127,11 @@ export function CommandPalette() {
 
             {/* Context-Specific Actions (Rule Builder) */}
             {isBuilderPage && (
-              <Command.Group heading="Rule Builder Options" className="cmdk-group">
-                <Command.Item
-                  onSelect={handleSaveRule}
-                  className="cmdk-item"
-                >
+              <Command.Group
+                heading="Rule Builder Options"
+                className="cmdk-group"
+              >
+                <Command.Item onSelect={handleSaveRule} className="cmdk-item">
                   <Icon name="check" size={14} className="cmdk-item-icon" />
                   <span>Save changes</span>
                   <div className="cmdk-item-shortcut">
@@ -233,20 +235,14 @@ export function CommandPalette() {
                   <Kbd>C</Kbd> <Kbd>R</Kbd>
                 </div>
               </Command.Item>
-              <Command.Item
-                onSelect={handleReloadEngine}
-                className="cmdk-item"
-              >
+              <Command.Item onSelect={handleReloadEngine} className="cmdk-item">
                 <Icon name="refresh" size={14} className="cmdk-item-icon" />
                 <span>Reload Decision Engine</span>
                 <div className="cmdk-item-shortcut">
                   <Kbd>⇧</Kbd> <Kbd>R</Kbd>
                 </div>
               </Command.Item>
-              <Command.Item
-                onSelect={handleToggleTheme}
-                className="cmdk-item"
-              >
+              <Command.Item onSelect={handleToggleTheme} className="cmdk-item">
                 <Icon name="eye" size={14} className="cmdk-item-icon" />
                 <span>Toggle Theme Mode</span>
                 <div className="cmdk-item-shortcut">
@@ -267,9 +263,16 @@ export function CommandPalette() {
                   >
                     <Icon name="rule" size={14} className="cmdk-item-icon" />
                     <div className="flex flex-col min-w-0">
-                      <span className="font-medium truncate">{rule.meta?.name}</span>
+                      <span className="font-medium truncate">
+                        {rule.meta?.name}
+                      </span>
                       <span className="text-[10px] text-(--fg-subtle) font-mono">
-                        {rule.meta?.code || "N/A"} · {(rule.state || rule.policy?.mode || "inactive").toUpperCase()}
+                        {rule.meta?.code || "N/A"} ·{" "}
+                        {(
+                          rule.state ||
+                          rule.policy?.mode ||
+                          "inactive"
+                        ).toUpperCase()}
                       </span>
                     </div>
                   </Command.Item>

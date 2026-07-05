@@ -1,5 +1,3 @@
-"use client";
-
 import type { ReactNode } from "react";
 import { CommandPalette } from "./command-palette";
 
@@ -19,7 +17,9 @@ export function AppShell({ sidebar, topbar, children, noPad }: AppShellProps) {
       {sidebar}
       <div className="flex flex-col overflow-hidden bg-(--bg)">
         {topbar}
-        <main className={`flex-1 ${noPad ? "overflow-hidden p-0 flex flex-col" : "overflow-auto p-8"}`}>
+        <main
+          className={`flex-1 ${noPad ? "overflow-hidden p-0 flex flex-col" : "overflow-auto p-8"}`}
+        >
           {children}
         </main>
       </div>

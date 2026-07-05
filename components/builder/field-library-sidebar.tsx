@@ -20,7 +20,7 @@ export function FieldLibrarySidebar() {
           (f) =>
             f.path.toLowerCase().includes(q) ||
             f.description.toLowerCase().includes(q) ||
-            f.type.toLowerCase().includes(q)
+            f.type.toLowerCase().includes(q),
         ),
       }))
       .filter((g) => g.fields.length > 0);
@@ -90,7 +90,11 @@ export function FieldLibrarySidebar() {
   );
 }
 
-function FieldLibraryItem({ field }: { field: { path: string; description: string; type: string } }) {
+function FieldLibraryItem({
+  field,
+}: {
+  field: { path: string; description: string; type: string };
+}) {
   const [{ isDragging }, dragRef] = useDrag(
     () => ({
       type: "field",
@@ -99,7 +103,7 @@ function FieldLibraryItem({ field }: { field: { path: string; description: strin
         isDragging: monitor.isDragging(),
       }),
     }),
-    [field]
+    [field],
   );
 
   return (
