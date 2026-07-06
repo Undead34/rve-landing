@@ -1,19 +1,21 @@
 "use client";
 
-import { useEffect, useState, useMemo, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { Sidebar } from "@/components/layout/sidebar";
 import { SidebarFooter } from "@/components/layout/sidebar-footer";
 import { Topbar } from "@/components/layout/topbar";
-import { ModeBadge, ActionBadge, Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { HttpRuleRepository } from "@/lib/infrastructure/http-repository";
-import { useRuleCrud } from "@/lib/hooks/useRuleCrud";
-import { type FraudRule } from "@/lib/domain/types";
+import { useRuleInspector } from "@/lib/hooks/useRuleInspector";
 import { NAV_ITEMS, ADMIN_ITEMS } from "@/lib/navigation";
+import { RuleInspectorHeader } from "@/components/rules/inspector/rule-inspector-header";
+import { RuleInspectorTabs } from "@/components/rules/inspector/rule-inspector-tabs";
+import { OverviewTab } from "@/components/rules/inspector/overview-tab";
+import { ConditionsTab } from "@/components/rules/inspector/conditions-tab";
+import { ConsequenceTab } from "@/components/rules/inspector/consequence-tab";
+import { HistoryTab } from "@/components/rules/inspector/history-tab";
+import { RelatedRulesTab } from "@/components/rules/inspector/related-rules-tab";
 
-const repository = new HttpRuleRepository();
 const INSPECTOR_SIDEBAR = (
   <Sidebar
     currentRoute="inspector"
@@ -28,151 +30,21 @@ const INSPECTOR_TOPBAR = (
   />
 );
 
-function renderLogicOperator(operator: string) {
-  const label =
-    operator === "==" || operator === "==="
-      ? "="
-      : operator === "!=" || operator === "!=="
-        ? "≠"
-        : operator;
-
-  return <span className="text-amber-500 font-semibold px-1">{label}</span>;
-}
-
-function renderLogicOperand(value: unknown) {
-  if (typeof value === "object" && value !== null && "var" in value) {
-    return (
-      <span className="text-emerald-400 font-mono font-medium">
-        {String((value as Record<string, unknown>).var)}
-      </span>
-    );
-  }
-
-  if (typeof value === "string") {
-    return <span className="text-rose-400 font-mono">{`"${value}"`}</span>;
-  }
-
-  return <span className="text-sky-400 font-mono">{String(value)}</span>;
-}
-
-function getStableListEntries<T>(
-  items: T[],
-  getSignature: (item: T) => string,
-): Array<{ item: T; key: string }> {
-  const seen = new Map<string, number>();
-
-  return items.map((item) => {
-    const signature = getSignature(item);
-    const occurrence = seen.get(signature) ?? 0;
-    seen.set(signature, occurrence + 1);
-
-    return {
-      item,
-      key: `${signature}:${occurrence}`,
-    };
-  });
-}
-
 function RuleInspectorContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const ruleId = searchParams.get("id");
-  const { loadRule } = useRuleCrud();
-
-  const [rule, setRule] = useState<FraudRule | null>(null);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
-  const [allRules, setAllRules] = useState<FraudRule[]>([]);
-  const [engineReady, setEngineReady] = useState(true);
-  const [rulesLoadedCount, setRulesLoadedCount] = useState(0);
 
-  const fetchRuleDetails = async () => {
-    if (!ruleId) return;
-    setLoading(true);
-    try {
-      // Load rules into store (to prepare for edit) and get rule data
-      const data = await loadRule(ruleId);
-      if (data) {
-        setRule(data);
-      }
+  const {
+    rule,
+    loading,
+    engineReady,
+    rulesLoadedCount,
+    relatedRules,
+    handleToggleState,
+    handleDelete,
+  } = useRuleInspector(ruleId);
 
-      // Fetch all rules for "Related rules" tab
-      const allRes = await repository.getAll(1, 100);
-      setAllRules(allRes.data);
-
-      const status = await repository.getEngineStatus();
-      setEngineReady(status.ready);
-      setRulesLoadedCount(status.loaded_rules);
-    } catch (err) {
-      console.error("Failed to load rule details", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchRuleDetails();
-  }, [ruleId]);
-
-  // Actions
-  const handleToggleState = async (
-    newMode: "active" | "suspended" | "deactivated",
-  ) => {
-    if (!rule) return;
-    setLoading(true);
-    try {
-      await repository.patch(rule.id, {
-        state: { mode: newMode },
-      });
-      await fetchRuleDetails();
-    } catch (err) {
-      alert(
-        "Failed to update rule state: " +
-          (err instanceof Error ? err.message : String(err)),
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!rule) return;
-    if (
-      !confirm(
-        "Are you sure you want to permanently delete this rule? This cannot be undone.",
-      )
-    )
-      return;
-    setLoading(true);
-    try {
-      await repository.delete(rule.id);
-      router.push("/rules");
-    } catch (err) {
-      alert(
-        "Failed to delete rule: " +
-          (err instanceof Error ? err.message : String(err)),
-      );
-      setLoading(false);
-    }
-  };
-
-  // Memoized related rules (same channels or same tags)
-  const relatedRules = useMemo(() => {
-    if (!rule) return [];
-    return allRules
-      .filter((r) => r.id !== rule.id)
-      .filter((r) => {
-        const sharedTags = (r.meta.tags || []).some((t) =>
-          (rule.meta.tags || []).includes(t),
-        );
-        const sharedChannels = (r.scope.channels || []).some((c) =>
-          (rule.scope.channels || []).includes(c),
-        );
-        return sharedTags || sharedChannels;
-      })
-      .slice(0, 4);
-  }, [rule, allRules]);
   const inspectorDetailTopbar = useMemo(
     () => (
       <Topbar
@@ -237,390 +109,26 @@ function RuleInspectorContent() {
 
   return (
     <AppShell sidebar={INSPECTOR_SIDEBAR} topbar={inspectorDetailTopbar}>
-      <div className="mb-4">
-        <Button
-          kind="ghost"
-          size="sm"
-          icon="arrow-left"
-          onClick={() => router.push("/rules")}
-        >
-          Back to library
-        </Button>
-      </div>
+      <RuleInspectorHeader
+        rule={rule}
+        onToggleState={handleToggleState}
+        onDelete={handleDelete}
+      />
 
-      <div className="page-header flex flex-col md:flex-row md:items-start justify-between gap-6 mb-6">
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            <ModeBadge mode={rule.state.mode} />
-            <ActionBadge action={rule.enforcement.action} />
-            <Badge kind="neutral" mono>
-              v{rule.meta.version}
-            </Badge>
-            <Badge kind="neutral" mono>
-              severity: {rule.enforcement.severity}
-            </Badge>
-            <Badge kind="neutral" mono>
-              score: {rule.enforcement.score_impact}
-            </Badge>
-          </div>
-          <h1 className="text-(--fs-xl) font-semibold tracking-[-0.02em] m-0">
-            {rule.meta.name}
-          </h1>
-          <div className="font-mono text-[13px] text-(--fg-muted) mt-1 mb-2">
-            {rule.meta.code || rule.id}
-          </div>
-          {rule.meta.description && (
-            <p className="text-(--fg-muted) text-[14px] m-0 max-w-3xl leading-relaxed">
-              {rule.meta.description}
-            </p>
-          )}
-        </div>
+      <RuleInspectorTabs
+        activeTab={activeTab}
+        onChange={setActiveTab}
+        historyCount={auditTrail.length}
+        relatedCount={relatedRules.length}
+      />
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button
-            icon="play"
-            onClick={() => router.push(`/console?id=${rule.id}`)}
-          >
-            Simulate
-          </Button>
-          <Button
-            icon="edit"
-            onClick={() => router.push(`/rules/builder?id=${rule.id}`)}
-          >
-            Edit
-          </Button>
-          {rule.state.mode === "active" ? (
-            <Button icon="clock" onClick={() => handleToggleState("suspended")}>
-              Suspend
-            </Button>
-          ) : (
-            <Button
-              kind="accent"
-              icon="check"
-              onClick={() => handleToggleState("active")}
-            >
-              Activate
-            </Button>
-          )}
-          <Button kind="danger" icon="trash" onClick={handleDelete}>
-            Delete
-          </Button>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="border-b border-(--border) mb-6 flex gap-4">
-        {[
-          { id: "overview", label: "Overview" },
-          { id: "conditions", label: "Conditions" },
-          { id: "consequence", label: "Consequence" },
-          { id: "history", label: "History", count: auditTrail.length },
-          { id: "related", label: "Related rules", count: relatedRules.length },
-        ].map((tab) => (
-          <button
-            type="button"
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`pb-3 text-[14px] font-medium border-b-2 transition-all cursor-pointer relative ${
-              activeTab === tab.id
-                ? "border-(--accent) text-(--fg) font-semibold"
-                : "border-transparent text-(--fg-muted) hover:text-(--fg)"
-            }`}
-          >
-            {tab.label}
-            {tab.count !== undefined && (
-              <span className="ml-1.5 text-[10px] font-mono bg-(--bg-inset) px-1.5 py-0.5 rounded-full text-(--fg-subtle)">
-                {tab.count}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab content */}
       <div>
-        {activeTab === "overview" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 flex flex-col gap-6">
-              <div className="bg-(--bg-elev) border border-(--border) rounded-(--radius-lg) p-5">
-                <h3 className="text-[14px] font-semibold uppercase tracking-[0.05em] text-(--fg-muted) mb-4 mt-0">
-                  Status
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                  <div>
-                    <div className="text-[11px] text-(--fg-subtle) uppercase tracking-[0.04em] mb-1">
-                      Current Mode
-                    </div>
-                    <div>
-                      <ModeBadge mode={rule.state.mode} />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[11px] text-(--fg-subtle) uppercase tracking-[0.04em] mb-1">
-                      Rollout Percent
-                    </div>
-                    <div className="font-mono font-medium">
-                      {rule.rollout.percent}%
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[11px] text-(--fg-subtle) uppercase tracking-[0.04em] mb-1">
-                      Schedule
-                    </div>
-                    <div className="text-[13px]">
-                      {rule.schedule.active_from_ms ? (
-                        <div className="font-mono">
-                          From{" "}
-                          {new Date(
-                            rule.schedule.active_from_ms,
-                          ).toLocaleDateString()}
-                          {rule.schedule.active_until_ms &&
-                            ` to ${new Date(rule.schedule.active_until_ms).toLocaleDateString()}`}
-                        </div>
-                      ) : (
-                        <span className="text-(--fg-muted)">
-                          Always active
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-(--bg-elev) border border-(--border) rounded-(--radius-lg) p-5">
-                <h3 className="text-[14px] font-semibold uppercase tracking-[0.05em] text-(--fg-muted) mb-4 mt-0">
-                  Scope
-                </h3>
-                <div className="flex flex-col gap-4">
-                  <div>
-                    <div className="text-[11px] text-(--fg-subtle) uppercase tracking-[0.04em] mb-1.5">
-                      Channels
-                    </div>
-                    <div className="flex gap-1.5 flex-wrap">
-                      {(rule.scope.channels || []).map((c) => (
-                        <Badge key={c} kind="neutral" mono>
-                          {c}
-                        </Badge>
-                      ))}
-                      {(!rule.scope.channels ||
-                        rule.scope.channels.length === 0) && (
-                        <span className="text-[12px] text-(--fg-subtle)">
-                          All channels
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[11px] text-(--fg-subtle) uppercase tracking-[0.04em] mb-1.5">
-                      Tags
-                    </div>
-                    <div className="flex gap-1.5 flex-wrap">
-                      {(rule.meta.tags || []).map((t) => (
-                        <Badge key={t} kind="neutral" mono>
-                          {t}
-                        </Badge>
-                      ))}
-                      {(!rule.meta.tags || rule.meta.tags.length === 0) && (
-                        <span className="text-[12px] text-(--fg-subtle)">
-                          No tags defined
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-6">
-              <div className="bg-(--bg-elev) border border-(--border) rounded-(--radius-lg) p-5">
-                <h3 className="text-[14px] font-semibold uppercase tracking-[0.05em] text-(--fg-muted) mb-4 mt-0">
-                  Audit logs
-                </h3>
-                <div className="flex flex-col gap-4">
-                  <div>
-                    <div className="text-[11px] text-(--fg-subtle) uppercase tracking-[0.04em] mb-1">
-                      Author
-                    </div>
-                    <div className="font-mono text-[13px]">
-                      {rule.meta.author}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[11px] text-(--fg-subtle) uppercase tracking-[0.04em] mb-1">
-                      Created
-                    </div>
-                    <div className="text-[13px]">
-                      {new Date(
-                        rule.state.audit.created_at_ms,
-                      ).toLocaleString()}{" "}
-                      <span className="text-(--fg-subtle)">by</span>{" "}
-                      {rule.state.audit.created_by || rule.meta.author}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[11px] text-(--fg-subtle) uppercase tracking-[0.04em] mb-1">
-                      Last Updated
-                    </div>
-                    <div className="text-[13px]">
-                      {new Date(
-                        rule.state.audit.updated_at_ms,
-                      ).toLocaleString()}{" "}
-                      <span className="text-(--fg-subtle)">by</span>{" "}
-                      {rule.state.audit.updated_by || rule.meta.author}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "conditions" && (
-          <div className="bg-(--bg-elev) border border-(--border) rounded-(--radius-lg) p-6">
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h2 className="text-[16px] font-semibold m-0">
-                  Evaluation logic
-                </h2>
-                <p className="text-(--fg-muted) text-[12px] m-0">
-                  JSONLogic representation compiled by the rule engine.
-                </p>
-              </div>
-              <Button
-                size="sm"
-                onClick={() =>
-                  navigator.clipboard.writeText(
-                    JSON.stringify(rule.evaluation.logic, null, 2),
-                  )
-                }
-              >
-                Copy JSON logic
-              </Button>
-            </div>
-            <div className="bg-(--bg-inset) rounded-lg p-5 font-mono text-[13px] overflow-x-auto border border-(--border)">
-              {/* Recursive logic visualizer */}
-              <LogicVisualizer logic={rule.evaluation.logic} />
-            </div>
-          </div>
-        )}
-
-        {activeTab === "consequence" && (
-          <div className="bg-(--bg-elev) border border-(--border) rounded-(--radius-lg) p-5">
-            <h3 className="text-[14px] font-semibold uppercase tracking-[0.05em] text-(--fg-muted) mb-4 mt-0">
-              Consequence details
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div>
-                <div className="text-[11px] text-(--fg-subtle) uppercase tracking-[0.04em] mb-1">
-                  Action
-                </div>
-                <div>
-                  <ActionBadge action={rule.enforcement.action} />
-                </div>
-              </div>
-              <div>
-                <div className="text-[11px] text-(--fg-subtle) uppercase tracking-[0.04em] mb-1">
-                  Score Impact
-                </div>
-                <div className="font-mono text-[16px] font-medium">
-                  {rule.enforcement.score_impact} / 10
-                </div>
-              </div>
-              <div>
-                <div className="text-[11px] text-(--fg-subtle) uppercase tracking-[0.04em] mb-1">
-                  Severity
-                </div>
-                <div>
-                  <Badge kind="neutral" mono>
-                    {rule.enforcement.severity}
-                  </Badge>
-                </div>
-              </div>
-              <div>
-                <div className="text-[11px] text-(--fg-subtle) uppercase tracking-[0.04em] mb-1">
-                  Cooldown Window
-                </div>
-                <div className="font-mono text-[13px]">
-                  {rule.enforcement.cooldown_ms
-                    ? `${rule.enforcement.cooldown_ms / 1000}s (${rule.enforcement.cooldown_ms / 60000}m)`
-                    : "No cooldown"}
-                </div>
-              </div>
-              <div>
-                <div className="text-[11px] text-(--fg-subtle) uppercase tracking-[0.04em] mb-1">
-                  Enforcement Tags
-                </div>
-                <div className="flex gap-1 flex-wrap mt-1">
-                  {rule.enforcement.tags.map((t) => (
-                    <Badge key={t} kind="neutral" mono>
-                      {t}
-                    </Badge>
-                  ))}
-                  {rule.enforcement.tags.length === 0 && (
-                    <span className="text-[12px] text-(--fg-subtle)">
-                      None
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "history" && (
-          <div className="bg-(--bg-elev) border border-(--border) rounded-(--radius-lg) p-6">
-            <div className="relative pl-6">
-              <div className="absolute left-[7px] top-1 bottom-1 w-[1px] bg-(--border)" />
-              {auditTrail.map((item) => (
-                <div key={item.id} className="relative pb-6 last:pb-0">
-                  <div className="absolute left-[-24px] top-1.5 w-3.5 h-3.5 rounded-full bg-(--bg-elev) border-2 border-(--fg)" />
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-[13px]">{item.what}</span>
-                    <span className="font-mono text-[11px] text-(--fg-subtle)">
-                      {item.by}
-                    </span>
-                    <span className="text-[11px] text-(--fg-subtle) ml-auto">
-                      {item.ts}
-                    </span>
-                  </div>
-                  <div className="text-(--fg-muted) text-[12px]">
-                    {item.detail}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
+        {activeTab === "overview" && <OverviewTab rule={rule} />}
+        {activeTab === "conditions" && <ConditionsTab rule={rule} />}
+        {activeTab === "consequence" && <ConsequenceTab rule={rule} />}
+        {activeTab === "history" && <HistoryTab auditTrail={auditTrail} />}
         {activeTab === "related" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {relatedRules.map((r) => (
-              <div
-                key={r.id}
-                onClick={() => router.push(`/rules/inspector?id=${r.id}`)}
-                className="bg-(--bg-elev) border border-(--border) rounded-(--radius-lg) p-5 cursor-pointer hover:bg-(--bg-hover)"
-              >
-                <div className="flex justify-between items-start gap-2 mb-2">
-                  <div className="flex gap-1">
-                    <ModeBadge mode={r.state.mode} />
-                    <ActionBadge action={r.enforcement.action} />
-                  </div>
-                </div>
-                <div className="font-medium text-[14px]">{r.meta.name}</div>
-                <div className="font-mono text-[11px] text-(--fg-muted) mt-1 mb-2">
-                  {r.meta.code || r.id}
-                </div>
-                <div className="text-[12px] text-(--fg-muted) line-clamp-2">
-                  {r.meta.description}
-                </div>
-              </div>
-            ))}
-            {relatedRules.length === 0 && (
-              <div className="col-span-2 text-center text-(--fg-muted) p-8">
-                No related rules found (sharing tags or channels).
-              </div>
-            )}
-          </div>
+          <RelatedRulesTab relatedRules={relatedRules} />
         )}
       </div>
     </AppShell>
@@ -640,73 +148,5 @@ export default function RuleInspectorPage() {
     >
       <RuleInspectorContent />
     </Suspense>
-  );
-}
-
-// Logic Visualizer component to render the JsonLogic tree beautifully
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function LogicVisualizer({ logic }: { logic: any }) {
-  if (!logic || typeof logic !== "object") {
-    return <span className="text-(--fg)">{String(logic)}</span>;
-  }
-
-  const entries = Object.entries(logic);
-  if (entries.length === 0) return <span>{"{}"}</span>;
-
-  const [op, args] = entries[0];
-
-  if (op === "and" || op === "or") {
-    const isAnd = op === "and";
-    const logicArgs = getStableListEntries(
-      args as unknown[],
-      (arg) => JSON.stringify(arg) ?? String(arg),
-    );
-
-    return (
-      <div className="flex flex-col gap-2 pl-4 border-l border-(--border-strong) my-1">
-        <div className="flex items-center gap-2">
-          <span
-            className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase ${
-              isAnd
-                ? "bg-blue-900/40 text-blue-300"
-                : "bg-purple-900/40 text-purple-300"
-            }`}
-          >
-            {op}
-          </span>
-          <span className="text-(--fg-subtle) text-[11px] font-mono">
-            ({(args as unknown[]).length} conditions)
-          </span>
-        </div>
-        <div className="flex flex-col gap-3">
-          {logicArgs.map(({ item, key }) => (
-            <div key={key}>
-              <LogicVisualizer logic={item} />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (Array.isArray(args) && args.length >= 2) {
-    const left = args[0];
-    const right = args[1];
-
-    return (
-      <div className="flex items-center flex-wrap gap-1 bg-(--bg-elev) px-3 py-1.5 rounded border border-(--border-faint) w-fit">
-        {renderLogicOperand(left)}
-        {renderLogicOperator(op)}
-        {renderLogicOperand(right)}
-      </div>
-    );
-  }
-
-  // Fallback for custom jsonlogic or negation
-  return (
-    <div className="text-(--fg-muted) pl-2">
-      <span className="text-purple-400 font-semibold">{op}: </span>
-      <span className="font-mono text-[12px]">{JSON.stringify(args)}</span>
-    </div>
   );
 }
