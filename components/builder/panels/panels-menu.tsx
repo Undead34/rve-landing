@@ -53,11 +53,16 @@ export function PanelsMenuButton({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
+    // The menu is position:fixed off the trigger's rect — close instead of
+    // drifting when a resize moves the trigger out from under it.
+    const onResize = () => setOpen(false);
     document.addEventListener("pointerdown", onDown);
     document.addEventListener("keydown", onKey);
+    window.addEventListener("resize", onResize);
     return () => {
       document.removeEventListener("pointerdown", onDown);
       document.removeEventListener("keydown", onKey);
+      window.removeEventListener("resize", onResize);
     };
   }, [open]);
 
@@ -71,6 +76,8 @@ export function PanelsMenuButton({
         type="button"
         onClick={() => setOpen((v) => !v)}
         title="Show or hide panels"
+        aria-haspopup="menu"
+        aria-expanded={open}
         className={triggerClasses[variant]}
         style={variant === "toolbar" ? { margin: "0 4px" } : undefined}
       >
@@ -83,6 +90,8 @@ export function PanelsMenuButton({
         createPortal(
           <div
             ref={menuRef}
+            role="menu"
+            aria-label="Show or hide panels"
             style={{
               position: "fixed",
               top: coords.top,
@@ -130,6 +139,8 @@ function PanelGroup({
         <button
           key={t.id}
           type="button"
+          role="menuitemcheckbox"
+          aria-checked={t.visible}
           onClick={() => onToggle(t.id)}
           className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12px] text-(--fg) hover:bg-(--bg-hover) cursor-pointer"
         >
