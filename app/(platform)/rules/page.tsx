@@ -16,7 +16,14 @@ import { type FraudRule } from "@/lib/domain/types";
 import { NAV_ITEMS, ADMIN_ITEMS } from "@/lib/navigation";
 
 const repository = new HttpRuleRepository();
-const DEFAULT_CHANNELS = ["web", "mobile", "api", "branch", "atm", "callcenter"];
+const DEFAULT_CHANNELS = [
+  "web",
+  "mobile",
+  "api",
+  "branch",
+  "atm",
+  "callcenter",
+];
 const RULE_LIBRARY_SIDEBAR = (
   <Sidebar
     currentRoute="library"
@@ -56,7 +63,8 @@ export default function RuleLibraryPage() {
       const config = await repository.getBuilderConfig();
       if (config && config.rule_fields) {
         // Extract channels from config enums or fields if available
-        const channelEnum = config.enums?.["event.channel"] || config.enums?.["channel"];
+        const channelEnum =
+          config.enums?.["event.channel"] || config.enums?.["channel"];
         if (channelEnum) setChannels(channelEnum);
       }
     } catch (err) {
@@ -74,12 +82,18 @@ export default function RuleLibraryPage() {
   const filteredRules = useMemo(() => {
     return rules.filter((r) => {
       if (modeFilter !== "all" && r.state.mode !== modeFilter) return false;
-      if (channelFilter !== "all" && !(r.scope.channels || []).includes(channelFilter)) return false;
+      if (
+        channelFilter !== "all" &&
+        !(r.scope.channels || []).includes(channelFilter)
+      )
+        return false;
       if (search) {
         const q = search.toLowerCase();
         const nameMatch = r.meta.name.toLowerCase().includes(q);
         const codeMatch = (r.meta.code || "").toLowerCase().includes(q);
-        const tagMatch = (r.meta.tags || []).some((t) => t.toLowerCase().includes(q));
+        const tagMatch = (r.meta.tags || []).some((t) =>
+          t.toLowerCase().includes(q),
+        );
         if (!nameMatch && !codeMatch && !tagMatch) return false;
       }
       return true;
@@ -107,7 +121,9 @@ export default function RuleLibraryPage() {
   const handleClearSelected = () => setSelected(new Set());
 
   const resolveId = (codeOrId: string): string => {
-    const matched = rules.find((r) => r.meta.code === codeOrId || r.id === codeOrId);
+    const matched = rules.find(
+      (r) => r.meta.code === codeOrId || r.id === codeOrId,
+    );
     return matched ? matched.id : codeOrId;
   };
 
@@ -138,7 +154,9 @@ export default function RuleLibraryPage() {
     router.push(`/rules/inspector?id=${id}`);
   };
 
-  const handleBulkModeUpdate = async (mode: "active" | "suspended" | "deactivated") => {
+  const handleBulkModeUpdate = async (
+    mode: "active" | "suspended" | "deactivated",
+  ) => {
     const ids = Array.from(selected);
     if (ids.length === 0) return;
     setLoading(true);
@@ -147,13 +165,16 @@ export default function RuleLibraryPage() {
         ids.map((id) =>
           repository.patch(id, {
             state: { mode },
-          })
-        )
+          }),
+        ),
       );
       setSelected(new Set());
       await fetchRulesAndConfig();
     } catch (err) {
-      alert("Failed to update rules: " + (err instanceof Error ? err.message : String(err)));
+      alert(
+        "Failed to update rules: " +
+          (err instanceof Error ? err.message : String(err)),
+      );
     } finally {
       setLoading(false);
     }
@@ -162,20 +183,29 @@ export default function RuleLibraryPage() {
   const handleBulkDelete = async () => {
     const ids = Array.from(selected);
     if (ids.length === 0) return;
-    if (!confirm(`Are you sure you want to permanently delete ${ids.length} rules?`)) return;
+    if (
+      !confirm(
+        `Are you sure you want to permanently delete ${ids.length} rules?`,
+      )
+    )
+      return;
     setLoading(true);
     try {
       await Promise.all(ids.map((id) => repository.delete(id)));
       setSelected(new Set());
       await fetchRulesAndConfig();
     } catch (err) {
-      alert("Failed to delete rules: " + (err instanceof Error ? err.message : String(err)));
+      alert(
+        "Failed to delete rules: " +
+          (err instanceof Error ? err.message : String(err)),
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const allSelected = filteredRules.length > 0 && filteredRules.every((r) => selected.has(r.id));
+  const allSelected =
+    filteredRules.length > 0 && filteredRules.every((r) => selected.has(r.id));
   const ruleLibraryTopbar = useMemo(
     () => (
       <Topbar
@@ -194,7 +224,8 @@ export default function RuleLibraryPage() {
             Rule library
           </h1>
           <p className="text-(--fg-muted) mt-1 m-0">
-            {rules.length} rules · filter, browse, and bulk-manage rules across all modes.
+            {rules.length} rules · filter, browse, and bulk-manage rules across
+            all modes.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -237,20 +268,34 @@ export default function RuleLibraryPage() {
           Loading rules repository...
         </div>
       ) : filteredRules.length === 0 ? (
-        <div className="bg-(--bg-elev) border border-(--border) rounded-(--radius-lg) p-12 text-center">
-          <div className="text-(--fs-lg) font-medium mb-2">No rules match the filters</div>
-          <p className="text-(--fg-muted) mb-4">Try clearing filters or search term to see other rules.</p>
-          <Button onClick={() => { setSearch(""); setModeFilter("all"); setChannelFilter("all"); }}>
+        <div className="bg-(--bg-elev) border border-(--border) rounded-lg p-12 text-center">
+          <div className="text-(--fs-lg) font-medium mb-2">
+            No rules match the filters
+          </div>
+          <p className="text-(--fg-muted) mb-4">
+            Try clearing filters or search term to see other rules.
+          </p>
+          <Button
+            onClick={() => {
+              setSearch("");
+              setModeFilter("all");
+              setChannelFilter("all");
+            }}
+          >
             Clear filters
           </Button>
         </div>
       ) : view === "table" ? (
         <RuleTable
           rules={tableData}
-          selected={new Set(Array.from(selected).map(id => {
-            const r = rules.find(rule => rule.id === id);
-            return r ? (r.meta.code || r.id) : id;
-          }))}
+          selected={
+            new Set(
+              Array.from(selected).map((id) => {
+                const r = rules.find((rule) => rule.id === id);
+                return r ? r.meta.code || r.id : id;
+              }),
+            )
+          }
           onToggle={handleToggle}
           onToggleAll={handleToggleAll}
           allSelected={allSelected}
