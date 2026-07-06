@@ -137,8 +137,21 @@ export function BuilderLayout() {
     setActiveSection,
   );
 
-  // Persist the last layout edit when the builder unmounts.
-  useEffect(() => () => store.flush(), [store]);
+  // Persist the last layout edit before it can be lost. Component unmount
+  // only covers in-app navigation — a hard reload or tab close tears down
+  // the page before React's cleanup is guaranteed to run, so a debounced
+  // save still pending at that moment would vanish. `pagehide` and
+  // `visibilitychange` (backgrounding, closing, reloading) catch that.
+  useEffect(() => {
+    const flush = () => store.flush();
+    window.addEventListener("pagehide", flush);
+    document.addEventListener("visibilitychange", flush);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      document.removeEventListener("visibilitychange", flush);
+      store.flush();
+    };
+  }, [store]);
 
   // Render tab bodies straight from the registry — one lookup by id.
   const factory = useCallback((node: TabNode) => {
