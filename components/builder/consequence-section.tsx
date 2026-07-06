@@ -63,10 +63,12 @@ export function ConsequenceSection({
           {actions.map((a) => {
             const on = consequence.action === a.value;
             return (
-              <div
+              <button
                 key={a.value}
+                type="button"
+                aria-pressed={on}
                 onClick={() => onChange({ ...consequence, action: a.value })}
-                className="p-3 rounded-[6px] cursor-pointer"
+                className="text-left p-3 rounded-[6px] cursor-pointer"
                 style={{
                   border: `1px solid ${on ? `var(--action-${a.value})` : "var(--border)"}`,
                   background: on
@@ -84,7 +86,7 @@ export function ConsequenceSection({
                 <div className="text-[11px] text-(--fg-muted)">
                   {a.desc}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

@@ -49,10 +49,15 @@ export function ScopeSection({ channels, onChange }: ScopeSectionProps) {
           {CHANNELS.map((c) => {
             const on = channels.includes(c);
             return (
-              <div
+              <button
                 key={c}
+                type="button"
+                aria-pressed={on}
                 onClick={() => toggle(c)}
                 style={{
+                  width: "100%",
+                  font: "inherit",
+                  textAlign: "left",
                   padding: 12,
                   border: `1px solid ${on ? "var(--fg)" : "var(--border)"}`,
                   borderRadius: 6,
@@ -98,7 +103,7 @@ export function ScopeSection({ channels, onChange }: ScopeSectionProps) {
                 >
                   {on && <Icon name="check" size={10} />}
                 </span>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -139,9 +144,14 @@ function Collapsible({
         overflow: "hidden",
       }}
     >
-      <div
+      <button
+        type="button"
+        aria-expanded={open}
         onClick={() => setOpen(!open)}
         style={{
+          width: "100%",
+          font: "inherit",
+          border: "none",
           display: "flex",
           alignItems: "center",
           gap: 6,
@@ -156,7 +166,7 @@ function Collapsible({
       >
         <Icon name={open ? "chevron-down" : "chevron-right"} size={12} />
         {label}
-      </div>
+      </button>
       {open && (
         <div
           style={{

@@ -230,9 +230,14 @@ function ValidationItem({
 }) {
   const isError = v.level === "error";
   return (
-    <div
+    <button
+      type="button"
       onClick={() => onJump(v.section)}
       style={{
+        width: "100%",
+        font: "inherit",
+        textAlign: "left",
+        display: "block",
         padding: "10px 12px",
         marginBottom: 6,
         cursor: "pointer",
@@ -277,7 +282,7 @@ function ValidationItem({
           </div>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 

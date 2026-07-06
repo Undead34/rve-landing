@@ -39,10 +39,12 @@ export function PolicySection({ policy, onChange }: PolicySectionProps) {
           {modes.map((m) => {
             const on = policy.mode === m.value;
             return (
-              <div
+              <button
                 key={m.value}
+                type="button"
+                aria-pressed={on}
                 onClick={() => onChange({ ...policy, mode: m.value })}
-                className="p-3 rounded-[6px] cursor-pointer"
+                className="text-left p-3 rounded-[6px] cursor-pointer"
                 style={{
                   border: `1px solid ${on ? `var(--status-${m.value})` : "var(--border)"}`,
                   background: on
@@ -62,7 +64,7 @@ export function PolicySection({ policy, onChange }: PolicySectionProps) {
                 <div className="text-[11px] text-(--fg-muted)">
                   {m.desc}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
