@@ -81,7 +81,7 @@ export function useBuilderPanels(
         const tabset = model.getActiveTabset() ?? model.getFirstTabSet();
         if (!tabset) return;
         model.doAction(
-          Actions.addNode(
+          Actions.addTab(
             panelTabJson(panel),
             tabset.getId(),
             DockLocation.CENTER,
@@ -99,7 +99,7 @@ export function useBuilderPanels(
         .find((b) => b.getLocation().getName() === panel.slot);
       if (!border) return;
       model.doAction(
-        Actions.addNode(
+        Actions.addTab(
           panelTabJson(panel),
           border.getId(),
           DockLocation.CENTER,
