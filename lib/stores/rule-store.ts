@@ -63,6 +63,14 @@ export interface RuleDraft {
 interface RuleStore {
   draft: RuleDraft;
   activeSection: string;
+  /**
+   * Monotonic counter bumped by every `setActiveSection` call — including
+   * re-asserts of the current section. Layout code that must react to
+   * *navigation requests* (not just section changes) watches this, so
+   * "go to Conditions" works even when Conditions is already active but its
+   * tab lost the FlexLayout selection. Not persisted.
+   */
+  sectionNav: number;
   activeTab: "builder" | "code" | "summary" | "tree";
   codeView: "condition" | "jsonlogic";
   isDirty: boolean;
@@ -72,7 +80,9 @@ interface RuleStore {
 
   setDraft: (partial: Partial<RuleDraft>) => void;
   setConditionTree: (tree: Condition) => void;
-  setEvaluationCondition: (condition: boolean | number | string | Record<string, unknown>) => void;
+  setEvaluationCondition: (
+    condition: boolean | number | string | Record<string, unknown>,
+  ) => void;
   setIdentity: (identity: Partial<RuleDraft["identity"]>) => void;
   setEnforcement: (enforcement: Partial<RuleDraft["enforcement"]>) => void;
   setPolicy: (policy: Partial<RuleDraft["policy"]>) => void;
@@ -125,6 +135,7 @@ export const useRuleStore = create<RuleStore>()(
     (set) => ({
       draft: createDefaultDraft(),
       activeSection: "conditions",
+      sectionNav: 0,
       activeTab: "builder",
       codeView: "condition",
       isDirty: false,
@@ -144,7 +155,11 @@ export const useRuleStore = create<RuleStore>()(
           isDirty: true,
         })),
 
-      setActiveSection: (section) => set({ activeSection: section }),
+      setActiveSection: (section) =>
+        set((state) => ({
+          activeSection: section,
+          sectionNav: state.sectionNav + 1,
+        })),
 
       setConditionTree: (tree) =>
         set((state) => ({
@@ -235,6 +250,6 @@ export const useRuleStore = create<RuleStore>()(
         ruleId: state.ruleId,
         isDirty: state.isDirty,
       }),
-    }
-  )
+    },
+  ),
 );
