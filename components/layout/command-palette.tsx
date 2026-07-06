@@ -30,17 +30,19 @@ export function CommandPalette() {
   const resetDraft = useRuleStore((s) => s.resetDraft);
   const { saveRule } = useRuleCrud();
 
-  // Toggle shortcut (Cmd+K or Ctrl+K)
+  // Toggle shortcut (Cmd+K or Ctrl+K) and Escape to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         toggle();
+      } else if (e.key === "Escape" && isOpen) {
+        setIsOpen(false);
       }
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [toggle]);
+  }, [toggle, isOpen, setIsOpen]);
 
   // Load rules when command palette opens
   useEffect(() => {
@@ -105,7 +107,11 @@ export function CommandPalette() {
 
   return (
     <>
-      <div className="cmdk-overlay" onClick={() => setIsOpen(false)} />
+      <div
+        className="cmdk-overlay"
+        aria-hidden="true"
+        onClick={() => setIsOpen(false)}
+      />
       <div className="cmdk-dialog">
         <Command label="Global Command Menu">
           <div className="cmdk-input-container">
