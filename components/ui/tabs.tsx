@@ -12,10 +12,13 @@ interface TabsProps {
 
 export function Tabs({ value, onChange, options }: TabsProps) {
   return (
-    <div className="flex border-b border-(--border)">
+    <div role="tablist" className="flex border-b border-(--border)">
       {options.map((o) => (
-        <div
+        <button
           key={o.value}
+          type="button"
+          role="tab"
+          aria-selected={value === o.value}
           onClick={() => onChange(o.value)}
           className={[
             "px-3 py-2 text-(--fs-md) cursor-pointer select-none",
@@ -34,7 +37,7 @@ export function Tabs({ value, onChange, options }: TabsProps) {
               {o.count}
             </span>
           )}
-        </div>
+        </button>
       ))}
     </div>
   )
