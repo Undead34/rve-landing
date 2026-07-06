@@ -69,11 +69,12 @@ export function EventBuilder({
           </div>
           <div className="flex flex-col gap-[2px]">
             {sections.map((s) => (
-              <div
+              <button
                 key={s.id}
+                type="button"
                 onClick={() => setActiveSection(s.id)}
                 className={[
-                  "flex items-center gap-[10px] px-2 py-[6px] rounded-(--radius-sm) cursor-pointer select-none text-(--fs-md)",
+                  "w-full text-left flex items-center gap-[10px] px-2 py-[6px] rounded-(--radius-sm) cursor-pointer select-none text-(--fs-md)",
                   activeSection === s.id
                     ? "bg-(--bg-active) text-(--fg) font-medium"
                     : "text-(--fg-muted) hover:bg-(--bg-hover) hover:text-(--fg)",
@@ -83,7 +84,7 @@ export function EventBuilder({
                 <span className="ml-auto text-[10px] text-(--fg-subtle) font-mono">
                   {s.count}
                 </span>
-              </div>
+              </button>
             ))}
           </div>
           <div className="h-[1px] bg-(--border-faint) my-3" />

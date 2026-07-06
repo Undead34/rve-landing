@@ -151,10 +151,11 @@ export function ResultPanel({ decision, trace, onNavigate }: ResultPanelProps) {
           {decision.rules_hit.map((r) => {
             const isMiss = r.score_delta === 0 && r.reason;
             return (
-              <div
+              <button
                 key={`${r.rule_id}:${r.version}`}
+                type="button"
                 onClick={() => onNavigate?.(r.rule_id)}
-                className="p-[8px_10px] border border-(--border) rounded-[6px] cursor-pointer bg-(--bg-elev)"
+                className="w-full text-left p-[8px_10px] border border-(--border) rounded-[6px] cursor-pointer bg-(--bg-elev)"
                 style={{ opacity: isMiss ? 0.6 : 1 }}
               >
                 <div className="flex justify-between mb-1">
@@ -186,7 +187,7 @@ export function ResultPanel({ decision, trace, onNavigate }: ResultPanelProps) {
                     </span>
                   )}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -194,7 +195,17 @@ export function ResultPanel({ decision, trace, onNavigate }: ResultPanelProps) {
 
       <div className="flex-1 overflow-hidden flex flex-col">
         <div
+          role="button"
+          tabIndex={0}
+          aria-expanded={traceOpen}
           onClick={() => setTraceOpen(!traceOpen)}
+          onKeyDown={(e) => {
+            if ((e.target as HTMLElement).closest("button")) return;
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setTraceOpen(!traceOpen);
+            }
+          }}
           className="flex items-center justify-between px-4 py-3 cursor-pointer"
           style={{
             borderBottom: traceOpen ? "1px solid var(--border-faint)" : "none",
