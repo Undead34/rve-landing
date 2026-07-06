@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback } from "react";
-import { useRuleStore } from "../stores/rule-store";
+import { useRuleStore, ensureConditionIds } from "../stores/rule-store";
 import { HttpRuleRepository } from "../infrastructure/http-repository";
 import type { FraudRule, RuleInput } from "../domain/types";
-import { treeToJsonLogic } from "@/lib/utils/jsonlogic";
-import { createConditionId, ensureConditionIds } from "@/lib/stores/rule-store";
+import {
+  treeToJsonLogic,
+  jsonLogicToConditionTree,
+} from "@/lib/utils/jsonlogic";
 import { validateRuleDraft } from "./useRuleValidation";
 
 const repository = new HttpRuleRepository();
@@ -188,96 +190,5 @@ export function useRuleCrud() {
     [setIsSaving, setSaveError],
   );
 
-  return { saveRule, loadRule, isSaving, saveError, resetDraft, repository };
-}
-
-function jsonLogicToConditionTree(
-  logic: Record<string, unknown>,
-): import("../stores/rule-store").Condition {
-  const root: import("../stores/rule-store").Condition = {
-    id: createConditionId(),
-    type: "group",
-    op: "AND",
-    children: [],
-  };
-
-  if (!logic || typeof logic !== "object") return root;
-
-  const entries = Object.entries(logic);
-  if (entries.length === 0) return root;
-
-  const [op, args] = entries[0] as [string, unknown];
-
-  if (op === "and" || op === "or") {
-    root.op = op === "or" ? "OR" : "AND";
-    if (Array.isArray(args)) {
-      root.children = args.map((arg) => {
-        if (typeof arg === "object" && arg !== null && !Array.isArray(arg)) {
-          const sub = jsonLogicToConditionTree(arg as Record<string, unknown>);
-          if (sub.children?.length === 1 && sub.children[0].type === "cond") {
-            return sub.children[0];
-          }
-          return sub;
-        }
-        return {
-          id: createConditionId(),
-          type: "cond" as const,
-          field: "",
-          op: "=",
-          value: String(arg),
-        };
-      });
-    }
-    return root;
-  }
-
-  if (["==", "===", "!=", "!==", ">", "<", ">=", "<="].includes(op)) {
-    if (Array.isArray(args) && args.length >= 2) {
-      const varField =
-        typeof args[0] === "object" && args[0] !== null
-          ? (args[0] as Record<string, unknown>).var
-          : args[0];
-      return {
-        id: createConditionId(),
-        type: "cond",
-        field: String(varField ?? ""),
-        op:
-          op === "===" || op === "=="
-            ? "="
-            : op === "!==" || op === "!="
-              ? "≠"
-              : op,
-        value: String(args[1]),
-      };
-    }
-  }
-
-  if (op === "in" || op === "regex") {
-    if (Array.isArray(args) && args.length >= 2) {
-      const varField =
-        typeof args[0] === "object" && args[0] !== null
-          ? (args[0] as Record<string, unknown>).var
-          : args[0];
-      return {
-        id: createConditionId(),
-        type: "cond",
-        field: String(varField ?? ""),
-        op: op === "in" ? "in" : "regex",
-        value: String(args[1]),
-      };
-    }
-  }
-
-  if (op === "!") {
-    if (Array.isArray(args) && args.length === 1) {
-      const inner = jsonLogicToConditionTree(
-        args[0] as Record<string, unknown>,
-      );
-      if (inner.type === "cond") {
-        return { ...inner, op: "≠" };
-      }
-    }
-  }
-
-  return root;
+  return { saveRule, loadRule, isSaving, saveError, resetDraft };
 }
