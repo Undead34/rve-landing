@@ -6,7 +6,13 @@ import { useFieldsStore } from "../stores/fields-store";
 
 const repository = new HttpRuleRepository();
 
-export function useFields() {
+/**
+ * Fetches the builder's field catalog into `useFieldsStore` once per session.
+ * Call this from the builder's entry point to preload the catalog before any
+ * panel that reads it mounts. Components that just need the data should read
+ * `useFieldsStore` selectors directly instead of calling this again.
+ */
+export function useFieldsBootstrap(): void {
   const isLoaded = useFieldsStore((s) => s.isLoaded);
   const setLoading = useFieldsStore((s) => s.setLoading);
   const setError = useFieldsStore((s) => s.setError);
@@ -37,7 +43,7 @@ export function useFields() {
         });
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Failed to load builder config"
+          err instanceof Error ? err.message : "Failed to load builder config",
         );
       } finally {
         setLoading(false);
@@ -46,6 +52,4 @@ export function useFields() {
 
     load();
   }, [isLoaded, setLoading, setError, setConfig]);
-
-  return useFieldsStore();
 }

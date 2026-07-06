@@ -6,7 +6,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useCommandPaletteStore } from "@/lib/stores/command-palette-store";
 import { useRuleStore } from "@/lib/stores/rule-store";
+import { useRuleCrud } from "@/lib/hooks/useRuleCrud";
 import { HttpRuleRepository } from "@/lib/infrastructure/http-repository";
+import type { FraudRule } from "@/lib/domain/types";
 import { Icon } from "@/components/ui/icon";
 import { Kbd } from "@/components/ui/kbd";
 
@@ -21,11 +23,12 @@ export function CommandPalette() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
 
-  const [rules, setRules] = useState<any[]>([]);
+  const [rules, setRules] = useState<FraudRule[]>([]);
   const [loading, setLoading] = useState(false);
 
   const setPolicy = useRuleStore((s) => s.setPolicy);
   const resetDraft = useRuleStore((s) => s.resetDraft);
+  const { saveRule } = useRuleCrud();
 
   // Toggle shortcut (Cmd+K or Ctrl+K)
   useEffect(() => {
@@ -42,6 +45,7 @@ export function CommandPalette() {
   // Load rules when command palette opens
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoading(true);
       repository
         .getAll(1, 100)
@@ -87,7 +91,7 @@ export function CommandPalette() {
 
   const handleSaveRule = () => {
     setIsOpen(false);
-    window.dispatchEvent(new CustomEvent("rve-save-rule"));
+    void saveRule();
   };
 
   const handleSetPolicyMode = (
@@ -268,11 +272,7 @@ export function CommandPalette() {
                       </span>
                       <span className="text-[10px] text-(--fg-subtle) font-mono">
                         {rule.meta?.code || "N/A"} ·{" "}
-                        {(
-                          rule.state ||
-                          rule.policy?.mode ||
-                          "inactive"
-                        ).toUpperCase()}
+                        {rule.state.mode.toUpperCase()}
                       </span>
                     </div>
                   </Command.Item>

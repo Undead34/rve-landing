@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import type { ReactElement } from "react";
-import { useFields } from "@/lib/hooks/useFields";
+import { useFieldsBootstrap } from "@/lib/hooks/useFields";
 import { createConditionId, useRuleStore } from "@/lib/stores/rule-store";
 import { useFieldsStore } from "@/lib/stores/fields-store";
 import type { FieldDef } from "@/lib/domain/types";
@@ -35,7 +35,10 @@ function getStableTextEntries(
 
 export function ConditionsSection({ tree, onChange }: ConditionsSectionProps) {
   const stats = useMemo(() => countConditions(tree), [tree]);
-  const { fields, isLoading, error } = useFields();
+  useFieldsBootstrap();
+  const fields = useFieldsStore((s) => s.fields);
+  const isLoading = useFieldsStore((s) => s.isLoading);
+  const error = useFieldsStore((s) => s.error);
   const activeTab = useRuleStore((s) => s.activeTab);
   const setActiveTab = useRuleStore((s) => s.setActiveTab);
 
@@ -914,12 +917,14 @@ export function GuardConditionCard() {
   const conditionMode = evaluationCondition === true ? "always" : "custom";
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (evaluationCondition === true) {
       setConditionDraft("true");
     } else {
       setConditionDraft(JSON.stringify(evaluationCondition, null, 2));
     }
     setConditionError(null);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [evaluationCondition]);
 
   const applyCustomCondition = (raw: string) => {
