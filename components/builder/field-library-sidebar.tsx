@@ -124,14 +124,7 @@ function FieldLibraryHint() {
       </p>
       <button
         type="button"
-        onClick={() => {
-          setActiveSection("conditions");
-          window.dispatchEvent(
-            new CustomEvent("rve-select-tab", {
-              detail: { tabId: "conditions" },
-            }),
-          );
-        }}
+        onClick={() => setActiveSection("conditions")}
         className="rounded-md border border-(--border-strong) bg-(--bg-elev) px-3 py-1.5 text-[12px] font-medium text-(--fg) hover:bg-(--bg-hover) cursor-pointer"
       >
         Go to Conditions

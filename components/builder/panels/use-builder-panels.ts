@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { Actions, DockLocation, Model } from "flexlayout-react";
 import type { PanelSlot } from "./types";
 import {
@@ -29,24 +29,38 @@ export interface BuilderPanelsController {
 /**
  * The visibility half of the panels API: a thin controller over the FlexLayout
  * model that shows/hides dismissible panels. Hiding removes the tab; showing
- * re-docks it to its slot's border using the very same JSON the default layout
- * uses, so a restored panel behaves exactly as it did before.
+ * re-docks it to its slot's border (or the main tabset for sections) using the
+ * very same JSON the default layout uses, so a restored panel behaves exactly
+ * as it did before.
  *
- * `revision` should change whenever the model mutates (wire it to
- * `onModelChange`) so `toggles` recomputes their visibility.
+ * `layoutRevision` must change whenever the model mutates (wire it to
+ * `onModelChange`) — it is what invalidates the memoized `toggles`, since the
+ * FlexLayout model is mutable and can't be observed by React directly.
+ *
+ * `onSectionShown` fires after a *section* panel is re-added. Programmatic
+ * `model.doAction` calls bypass `<Layout onAction>`, so without this callback
+ * the store would never learn that the re-added tab is now the selected one.
  */
 export function useBuilderPanels(
   model: Model,
   activeSection: string,
+  layoutRevision: number,
+  onSectionShown?: (id: string) => void,
 ): BuilderPanelsController {
-  const toggles = BUILDER_PANELS.filter(isPanelClosable)
-    .filter((p) => !isPanelContextHidden(p.id, activeSection))
-    .map((p) => ({
-      id: p.id,
-      title: p.title,
-      slot: p.slot,
-      visible: model.getNodeById(p.id) !== undefined,
-    }));
+  const toggles = useMemo(
+    () =>
+      BUILDER_PANELS.filter(isPanelClosable)
+        .filter((p) => !isPanelContextHidden(p.id, activeSection))
+        .map((p) => ({
+          id: p.id,
+          title: p.title,
+          slot: p.slot,
+          visible: model.getNodeById(p.id) !== undefined,
+        })),
+    // layoutRevision stands in for the mutable model's contents.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [model, activeSection, layoutRevision],
+  );
 
   const hidePanel = useCallback(
     (id: string) => {
@@ -75,6 +89,7 @@ export function useBuilderPanels(
             true,
           ),
         );
+        onSectionShown?.(id);
         return;
       }
 
@@ -93,7 +108,7 @@ export function useBuilderPanels(
         ),
       );
     },
-    [model],
+    [model, onSectionShown],
   );
 
   const togglePanel = useCallback(
@@ -104,5 +119,8 @@ export function useBuilderPanels(
     [model, hidePanel, showPanel],
   );
 
-  return { toggles, showPanel, hidePanel, togglePanel };
+  return useMemo(
+    () => ({ toggles, showPanel, hidePanel, togglePanel }),
+    [toggles, showPanel, hidePanel, togglePanel],
+  );
 }

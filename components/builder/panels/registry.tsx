@@ -86,6 +86,19 @@ const SECTION_RENDERERS: Record<string, () => ReactNode> = {
   summary: () => <SummaryPanel />,
 };
 
+/** A section listed in SECTION_META but missing here is a wiring mistake —
+ *  surface it in the tab body instead of rendering an empty panel. */
+function sectionRenderer(id: string): () => ReactNode {
+  return (
+    SECTION_RENDERERS[id] ??
+    (() => (
+      <div className="p-6 text-[12px] text-(--fg-muted)">
+        No renderer registered for section “{id}”.
+      </div>
+    ))
+  );
+}
+
 /** Field Library, aware of whether the active section can receive dropped fields. */
 function FieldLibraryPanel() {
   const activeSection = useRuleStore((s) => s.activeSection);
@@ -151,7 +164,7 @@ export const BUILDER_PANELS: BuilderPanelDef[] = [
       icon: s.icon,
       slot: "section",
       primary: s.primary,
-      render: SECTION_RENDERERS[s.id],
+      render: sectionRenderer(s.id),
     }),
   ),
   {

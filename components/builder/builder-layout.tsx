@@ -3,13 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   Actions,
-  Action,
   BorderNode,
   Layout,
   Model,
   TabNode,
   TabSetNode,
 } from "flexlayout-react";
+import type { ITabSetRenderValues } from "flexlayout-react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -23,6 +23,7 @@ import {
   pickBorderSelection,
 } from "./panels/registry";
 import { useBuilderPanels } from "./panels/use-builder-panels";
+import { useSectionTabSync } from "./panels/use-section-sync";
 import { EmptyTabset } from "./panels/empty-tabset";
 import { PanelsMenuButton } from "./panels/panels-menu";
 import {
@@ -66,6 +67,9 @@ function selectBorderTab(model: Model, tabId: string) {
   }
 }
 
+/** Applies the presentation-only model attributes that depend on current
+ *  state: hides context-irrelevant border tabs and marks the main tabstrip
+ *  when it has no tabs. Idempotent — dispatches only on actual change. */
 function syncLayoutChrome(model: Model, activeSection: string) {
   for (const panel of BUILDER_PANELS) {
     if (panel.slot === "section") continue;
@@ -114,14 +118,24 @@ export function BuilderLayout() {
     }),
   );
 
+  // The FlexLayout model is a mutable object created once per mount. React
+  // can't observe it, so every mutation bumps `layoutRevision` (see
+  // handleModelChange) and derived code keys off that counter.
   const [model] = useState(() => store.load(buildDefaultLayout));
-  // Bumped on every model mutation so the panels controller re-reads visibility.
   const [layoutRevision, setLayoutRevision] = useState(0);
 
   const activeSection = useRuleStore((s) => s.activeSection);
   const setActiveSection = useRuleStore((s) => s.setActiveSection);
 
-  const panels = useBuilderPanels(model, activeSection);
+  // All activeSection ↔ FlexLayout selection syncing lives in this hook.
+  const { onAction } = useSectionTabSync(model, layoutRevision);
+
+  const panels = useBuilderPanels(
+    model,
+    activeSection,
+    layoutRevision,
+    setActiveSection,
+  );
 
   // Persist the last layout edit when the builder unmounts.
   useEffect(() => () => store.flush(), [store]);
@@ -133,109 +147,75 @@ export function BuilderLayout() {
     return panel ? panel.render() : null;
   }, []);
 
-  // Sync activeSection → the selected tab in the main tabset.
+  // Chrome reacts to both section changes and layout mutations (a re-added
+  // tab needs its hidden-class re-applied; an emptied tabset its marker).
   useEffect(() => {
-    try {
-      const node = model.getNodeById(activeSection);
-      if (node) {
-        const parent = node.getParent() as BorderNode | TabSetNode | null;
-        if (
-          parent &&
-          "getSelectedNode" in parent &&
-          (parent as BorderNode | TabSetNode).getSelectedNode() !== node
-        ) {
-          model.doAction(Actions.selectTab(activeSection));
-        }
-      }
-    } catch (e) {
-      console.warn("Could not sync activeSection to FlexLayout:", e);
-    }
-  }, [activeSection, model]);
+    syncLayoutChrome(model, activeSection);
+  }, [layoutRevision, activeSection, model]);
 
   // Context-aware panels: reveal each border's most relevant tab for the
   // active section (Field Library while editing Conditions, the Sections rail
   // otherwise). Runs only on section change, so manual tab picks stick.
   useEffect(() => {
-    syncLayoutChrome(model, activeSection);
-
-    (["left", "right"] as const).forEach((slot) => {
+    for (const slot of ["left", "right"] as const) {
       const tabId = pickBorderSelection(slot, activeSection);
       if (tabId) selectBorderTab(model, tabId);
-    });
+    }
   }, [activeSection, model]);
 
-  useEffect(() => {
-    syncLayoutChrome(model, activeSection);
-  }, [layoutRevision, activeSection, model]);
-
-  // Explicit "jump to this tab" requests (rail clicks, validation jumps).
-  useEffect(() => {
-    const handleSelectTab = (e: Event) => {
-      const { tabId } = (e as CustomEvent<{ tabId: string }>).detail;
-      try {
-        if (model.getNodeById(tabId)) {
-          model.doAction(Actions.selectTab(tabId));
-        }
-      } catch (err) {
-        console.warn("Failed to select tab in FlexLayout:", tabId, err);
-      }
-    };
-    window.addEventListener("rve-select-tab", handleSelectTab);
-    return () => window.removeEventListener("rve-select-tab", handleSelectTab);
-  }, [model]);
-
-  // Sync FlexLayout tab selections back into the store.
-  const handleAction = useCallback(
-    (action: Action): Action | undefined => {
-      if (action.type === Actions.SELECT_TAB) {
-        const tabId = action.data.tabNode;
-        if (SECTION_IDS.includes(tabId)) {
-          setActiveSection(tabId);
-        }
-      }
-      return action;
-    },
-    [setActiveSection],
-  );
-
-  // When the active section's tab is closed, follow the tabset's new selection.
-  useEffect(() => {
-    if (model.getNodeById(activeSection)) return;
-    const tabset = model.getActiveTabset() ?? model.getFirstTabSet();
-    const selectedId = tabset?.getSelectedNode()?.getId();
-    if (selectedId && SECTION_IDS.includes(selectedId)) {
-      setActiveSection(selectedId);
-    }
-  }, [layoutRevision, activeSection, model, setActiveSection]);
+  const stepSection = useCallback((delta: -1 | 1) => {
+    const state = useRuleStore.getState();
+    const next = SECTION_IDS[SECTION_IDS.indexOf(state.activeSection) + delta];
+    if (next) state.setActiveSection(next);
+  }, []);
 
   useHotkeys(
     "alt+shift+left,alt+shift+h",
-    () => {
-      const idx = SECTION_IDS.indexOf(activeSection);
-      if (idx > 0) setActiveSection(SECTION_IDS[idx - 1]);
-    },
+    () => stepSection(-1),
     { enableOnFormTags: true },
-    [activeSection],
+    [stepSection],
   );
 
   useHotkeys(
     "alt+shift+right,alt+shift+l",
-    () => {
-      const idx = SECTION_IDS.indexOf(activeSection);
-      if (idx < SECTION_IDS.length - 1) setActiveSection(SECTION_IDS[idx + 1]);
-    },
+    () => stepSection(1),
     { enableOnFormTags: true },
-    [activeSection],
+    [stepSection],
   );
 
   const handleModelChange = useCallback(
     (next: Model) => {
-      // Revision bumps immediately (keeps the Panels menu in sync); the write
+      // Revision bumps immediately (keeps derived state in sync); the write
       // itself is debounced inside the store.
       setLayoutRevision((r) => r + 1);
       store.save(next);
     },
     [store],
+  );
+
+  // Keep Panels in the main tabset toolbar when there are visible tabs; the
+  // empty placeholder renders its own centered action instead.
+  const handleRenderTabSet = useCallback(
+    (node: TabSetNode | BorderNode, renderValues: ITabSetRenderValues) => {
+      if (
+        node instanceof TabSetNode &&
+        node.getId() === model.getFirstTabSet()?.getId() &&
+        node.getChildren().length > 0
+      ) {
+        renderValues.buttons.push(
+          <PanelsMenuButton key="rve-panels-menu" controller={panels} />,
+        );
+      }
+    },
+    [model, panels],
+  );
+
+  const handleTabSetPlaceHolder = useCallback(
+    (node: TabSetNode) => {
+      if (node.getId() !== model.getFirstTabSet()?.getId()) return null;
+      return <EmptyTabset controller={panels} />;
+    },
+    [model, panels],
   );
 
   return (
@@ -244,26 +224,11 @@ export function BuilderLayout() {
         <Layout
           model={model}
           factory={factory}
-          onAction={handleAction}
+          onAction={onAction}
           classNameMapper={(cls) => cls}
           onModelChange={handleModelChange}
-          onRenderTabSet={(node, renderValues) => {
-            // Keep Panels in the main tabset toolbar when there are visible
-            // tabs; the empty placeholder renders its own centered action.
-            if (
-              node instanceof TabSetNode &&
-              node.getId() === model.getFirstTabSet()?.getId() &&
-              node.getChildren().length > 0
-            ) {
-              renderValues.buttons.push(
-                <PanelsMenuButton key="rve-panels-menu" controller={panels} />,
-              );
-            }
-          }}
-          onTabSetPlaceHolder={(node) => {
-            if (node.getId() !== model.getFirstTabSet()?.getId()) return null;
-            return <EmptyTabset controller={panels} />;
-          }}
+          onRenderTabSet={handleRenderTabSet}
+          onTabSetPlaceHolder={handleTabSetPlaceHolder}
         />
       </DndProvider>
     </div>
